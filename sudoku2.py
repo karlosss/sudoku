@@ -3,6 +3,8 @@ from time import time
 from copy import deepcopy
 start = time()
 
+#druhy commit
+
 raw = [
 [0,0,0,0,5,8,2,3,7],
 [0,0,0,0,0,0,1,0,0],

@@ -3,31 +3,18 @@ from time import time
 from copy import deepcopy
 start = time()
 
-#druhy commit
-
 raw = [
-[0,0,0,0,5,8,2,3,7],
-[0,0,0,0,0,0,1,0,0],
-[3,0,0,0,1,0,0,0,8],
-[0,0,2,7,4,0,0,0,0],
-[4,0,8,5,2,9,6,0,1],
-[0,0,0,0,6,3,4,0,0],
-[2,0,0,0,8,0,0,0,6],
-[0,0,1,0,0,0,0,0,0],
-[9,6,7,2,3,0,0,0,0]
+[0,0,0,7,9,0,0,3,6],
+[0,0,0,0,0,4,1,9,2],
+[2,0,0,0,6,0,7,0,0],
+[7,0,0,0,0,0,6,0,5],
+[0,5,0,0,0,0,0,2,0],
+[4,0,2,0,0,0,0,0,7],
+[0,0,4,0,7,0,0,0,9],
+[5,8,7,4,0,0,0,0,0],
+[9,1,0,0,5,6,0,0,0]
 ]
 
-##raw = [
-##[1,2,3,4,5,6,7,8,9],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0],
-##[0,0,0,0,0,0,0,0,0]
-##]
 
 
 def kontrola_vstupu(vstup):
@@ -118,22 +105,58 @@ def delka(pole):
             a = a + len(j)
     return a
 
+def najdi_uzel(cand):
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            if len(cand[i][j]) > 1:
+                return [i,j]
+    return False
+
+def kontrola(cand):
+    candBef = []
+    while not candBef == cand:
+        candBef = deepcopy(cand)
+        cand = pravidlova_zkouska(cand)
+        if cand == False:
+            return False
+    return cand
+
+def brute_force(candidates):
+    hloubka = 0
+    cesta = []
+    mezipamet = []
+    mezipamet.append(deepcopy(candidates))
+    cesta.append(0)
+
+    while True:
+        uzel = najdi_uzel(candidates)
+        if uzel == False:
+            break
+        if cesta[hloubka] < len(candidates[uzel[0]][uzel[1]]):
+            candidates[uzel[0]][uzel[1]] = [candidates[uzel[0]][uzel[1]][cesta[hloubka]]]
+        else:
+            hloubka = hloubka - 1
+            cesta[hloubka] = cesta[hloubka] + 1
+            candidates = deepcopy(mezipamet[hloubka])
+            del(cesta[hloubka+1])
+            del(mezipamet[hloubka+1])
+            continue
+        candidates = kontrola(candidates)
+        if candidates == False:
+            candidates = deepcopy(mezipamet[hloubka])
+            cesta[hloubka] = cesta[hloubka] + 1
+        else:
+            hloubka = hloubka + 1
+            mezipamet.append(deepcopy(candidates))
+            cesta.append(0)
 
 kontrola_vstupu(raw)
 PrvniKontrola = True
 candidates = generate_candidates(raw)
-candBef = []
-
-while not candBef == candidates:
-    candBef = deepcopy(candidates)
-    candidates = pravidlova_zkouska(candidates)
-
-
+candidates = kontrola(candidates)
 
 PrvniKontrola = False
-
-
-
+brute_force(candidates)
 
 
 print(time()-start)

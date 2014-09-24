@@ -121,34 +121,36 @@ def kontrola(cand):
             return False
     return cand
 
-def brute_force(candidates):
+def brute_force(cand):
     hloubka = 0
     cesta = []
     mezipamet = []
-    mezipamet.append(deepcopy(candidates))
+    mezipamet.append(deepcopy(cand))
     cesta.append(0)
 
     while True:
-        uzel = najdi_uzel(candidates)
+        uzel = najdi_uzel(cand)
         if uzel == False:
             break
-        if cesta[hloubka] < len(candidates[uzel[0]][uzel[1]]):
-            candidates[uzel[0]][uzel[1]] = [candidates[uzel[0]][uzel[1]][cesta[hloubka]]]
+        if cesta[hloubka] < len(cand[uzel[0]][uzel[1]]):
+            cand[uzel[0]][uzel[1]] = [cand[uzel[0]][uzel[1]][cesta[hloubka]]]
         else:
             hloubka = hloubka - 1
             cesta[hloubka] = cesta[hloubka] + 1
-            candidates = deepcopy(mezipamet[hloubka])
+            cand = deepcopy(mezipamet[hloubka])
             del(cesta[hloubka+1])
             del(mezipamet[hloubka+1])
             continue
-        candidates = kontrola(candidates)
-        if candidates == False:
-            candidates = deepcopy(mezipamet[hloubka])
+        cand = kontrola(cand)
+        if cand == False:
+            cand = deepcopy(mezipamet[hloubka])
             cesta[hloubka] = cesta[hloubka] + 1
         else:
             hloubka = hloubka + 1
-            mezipamet.append(deepcopy(candidates))
+            mezipamet.append(deepcopy(cand))
             cesta.append(0)
+
+    return cand
 
 kontrola_vstupu(raw)
 PrvniKontrola = True
@@ -156,7 +158,7 @@ candidates = generate_candidates(raw)
 candidates = kontrola(candidates)
 
 PrvniKontrola = False
-brute_force(candidates)
+candidates = brute_force(candidates)
 
 
 print(time()-start)

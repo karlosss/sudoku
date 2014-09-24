@@ -2,7 +2,7 @@ Sudoku
 ======
 
 Sudoku solver, generátor, OCR, encyklopedie strategií a vůbec všechno možné :)
-Současná verze je zatím pouze solverem, zato však se 100% úspěšností a časem okolo 400 ms.
+Současná verze je zatím pouze solverem, zato však se 100% úspěšností a časem v nejhorších případech okolo 400 ms, standardně však kolem 50 ms.
 
 Algoritmus funguje následovně: vezme zadání a pro nevyplněná políčka vygeneruje všechny kandidáty, tj. čísla, která nejsou v témže řádku, sloupci ani čtverci zastoupena. Následně se podívá, zda v nějakém políčku není pouze jediný kandidát. Pokud ano, onen kandidát se prohlásí za řešení daného políčka a nakládá se s ním stejně, jako kdyby byl doplněn již v zadání. Následně se celý postup opakuje tak dlouho, dokud se tvoří nová řešení.
 

@@ -4,20 +4,21 @@ from copy import deepcopy
 start = time()
 
 raw = [
-[0,0,0,7,9,0,0,3,6],
+[0,0,0,7,0,0,0,3,6],
 [0,0,0,0,0,4,1,9,2],
 [2,0,0,0,6,0,7,0,0],
 [7,0,0,0,0,0,6,0,5],
 [0,5,0,0,0,0,0,2,0],
-[4,0,2,0,0,0,0,0,7],
+[4,0,2,0,0,0,0,0,0],
 [0,0,4,0,7,0,0,0,9],
 [5,8,7,4,0,0,0,0,0],
-[9,1,0,0,5,6,0,0,0]
+[9,1,0,0,0,6,0,0,0]
 ]
 
 
 
 def kontrola_vstupu(vstup):
+    """kontrola uzivatelskeho vstupu"""
     if len(vstup) != 9:
         print("neplatny vstup")
         exit()
@@ -31,6 +32,7 @@ def kontrola_vstupu(vstup):
                 exit()
 
 def generate_candidates(template):
+    """vygeneruje kandidaty pro nezadana policka"""
     cand = [
     [[],[],[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[],[],[]],
@@ -51,6 +53,7 @@ def generate_candidates(template):
     return cand
 
 def pravidlova_zkouska(cand):
+    """algoritmus kontroly pravidel sudoku"""
     for i in range(0,9,1):
         removeRadek = []
         removeSloupec = []
@@ -98,14 +101,8 @@ def pravidlova_zkouska(cand):
 
     return cand
 
-def delka(pole):
-    a = 0
-    for i in pole:
-        for j in i:
-            a = a + len(j)
-    return a
-
 def najdi_uzel(cand):
+    """Vrati nejblizsi nejednoznacny uzel k levemu hornimu rohu. Vrati false kdyz zadny neexistuje."""
     for i in range(0,9,1):
         for j in range(0,9,1):
             if len(cand[i][j]) > 1:
@@ -113,6 +110,7 @@ def najdi_uzel(cand):
     return False
 
 def kontrola(cand):
+    """kontrola pravidel, dokud se deji zmeny"""
     candBef = []
     while not candBef == cand:
         candBef = deepcopy(cand)
@@ -122,34 +120,49 @@ def kontrola(cand):
     return cand
 
 def brute_force(cand):
+    """BF vyresi vsechno :)"""
     hloubka = 0
     cesta = []
     mezipamet = []
     mezipamet.append(deepcopy(cand))
     cesta.append(0)
+    iterace = 0
 
     while True:
+        iterace = iterace + 1
         uzel = najdi_uzel(cand)
+        print("")
+        print("iterace: "+str(iterace))
+        print("hloubka: "+str(hloubka))
+        print("cesta: "+str(cesta))
+        print("uzel: "+str(uzel))
+
         if uzel == False:
+            print("Hotovo!")
             break
         if cesta[hloubka] < len(cand[uzel[0]][uzel[1]]):
             cand[uzel[0]][uzel[1]] = [cand[uzel[0]][uzel[1]][cesta[hloubka]]]
         else:
             hloubka = hloubka - 1
+            if hloubka == -1:
+                print("Sudoku nema reseni!")
+                break
             cesta[hloubka] = cesta[hloubka] + 1
             cand = deepcopy(mezipamet[hloubka])
             del(cesta[hloubka+1])
             del(mezipamet[hloubka+1])
+            print("FAIL, vracim se zpatky a zkusim jine cislo.")
             continue
         cand = kontrola(cand)
         if cand == False:
             cand = deepcopy(mezipamet[hloubka])
             cesta[hloubka] = cesta[hloubka] + 1
+            print("FAIL, zkusim jine cislo.")
         else:
             hloubka = hloubka + 1
             mezipamet.append(deepcopy(cand))
             cesta.append(0)
-
+            print("OK, jdu hloubeji.")
     return cand
 
 kontrola_vstupu(raw)

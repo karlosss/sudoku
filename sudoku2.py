@@ -15,8 +15,6 @@ raw = [
 [9,1,0,0,0,6,0,0,0]
 ]
 
-
-
 def kontrola_vstupu(vstup):
     """kontrola uzivatelskeho vstupu"""
     if len(vstup) != 9:

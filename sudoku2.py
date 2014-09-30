@@ -1,19 +1,20 @@
-from tkinter import *
+from Tkinter import *
 from time import time
 from copy import deepcopy
 start = time()
 
 raw = [
-[0,0,0,7,0,0,0,3,6],
-[0,0,0,0,0,4,1,9,2],
-[2,0,0,0,6,0,7,0,0],
-[7,0,0,0,0,0,6,0,5],
-[0,5,0,0,0,0,0,2,0],
-[4,0,2,0,0,0,0,0,0],
-[0,0,4,0,7,0,0,0,9],
-[5,8,7,4,0,0,0,0,0],
-[9,1,0,0,0,6,0,0,0]
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0]
 ]
+
 
 def kontrola_vstupu(vstup):
     """kontrola uzivatelskeho vstupu"""
@@ -128,7 +129,9 @@ def brute_force(cand):
 
     while True:
         iterace = iterace + 1
+
         uzel = najdi_uzel(cand)
+
         print("")
         print("iterace: "+str(iterace))
         print("hloubka: "+str(hloubka))
@@ -179,7 +182,7 @@ def vykresli(cand):
     global C
     for i in range(0,9,1):
         for j in range(0,9,1):
-            C.create_text(i*80+10,j*80+10, anchor="nw", text=cand[j][i], font="arial 7")
+            C.create_text(i*80+10,j*80+10, anchor="nw", text=cand[j][i], font="arial 30")
 okno = Tk()
 okno.minsize(810,810)
 okno.maxsize(810,810)

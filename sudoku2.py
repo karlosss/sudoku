@@ -184,8 +184,8 @@ def vykresli(cand):
         for j in range(0,9,1):
             C.create_text(i*80+10,j*80+10, anchor="nw", text=cand[j][i], font="arial 30")
 okno = Tk()
-okno.minsize(810,810)
-okno.maxsize(810,810)
+okno.minsize(1200,810)
+okno.maxsize(1200,810)
 okno.resizable(0,0)
 
 C = Canvas(okno, width=810, height=810, bg="#ffffff")

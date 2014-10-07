@@ -1,18 +1,21 @@
+from __future__ import print_function
 from Tkinter import *
 from time import time
 from copy import deepcopy
+
+
 start = time()
 
 raw = [
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0]
+[2,0,5,4,0,0,0,0,0],
+[0,0,8,0,6,1,0,0,0],
+[0,1,0,0,0,0,3,6,0],
+[1,0,0,7,0,0,4,0,8],
+[0,7,0,6,0,4,0,1,0],
+[8,0,4,0,0,9,0,0,6],
+[0,2,1,0,0,0,0,4,0],
+[0,0,0,1,5,0,6,0,0],
+[0,0,0,0,0,7,1,0,5]
 ]
 
 
@@ -174,8 +177,8 @@ candidates = kontrola(candidates)
 PrvniKontrola = False
 candidates = brute_force(candidates)
 
-
-print(time()-start)
+print()
+print("Doba vypoctu "+str(1000*(time()-start))+" ms")
 #-----------------------------------------------------------------------------------------------------------------------------
 def vykresli(cand):
     """vykresleni kandidatu pro kazde policko do tabulky"""
@@ -183,13 +186,16 @@ def vykresli(cand):
     for i in range(0,9,1):
         for j in range(0,9,1):
             C.create_text(i*80+10,j*80+10, anchor="nw", text=cand[j][i], font="arial 30")
+
+
 okno = Tk()
-okno.minsize(1200,810)
-okno.maxsize(1200,810)
+okno.minsize(1400,810)
+okno.maxsize(1400,810)
 okno.resizable(0,0)
 
 C = Canvas(okno, width=810, height=810, bg="#ffffff")
 C.place(x=0,y=0)
+
 
 for i in range(0,10,1):
     if i in (1,2,4,5,7,8):

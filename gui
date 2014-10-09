@@ -1,0 +1,131 @@
+#coding: utf8
+
+from __future__ import print_function
+from Tkinter import *
+
+okno = Tk()
+okno.minsize(1024,705)
+okno.maxsize(1024,705)
+okno.resizable(0,0)
+okno.title("SuSol")
+
+kur = None
+x = None
+y = None
+cislaVsudoku = [
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0]
+]
+
+cislaVsudokuOBJ = [
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None],
+[None,None,None,None,None,None,None,None,None]
+]
+
+def souradnice(klik):
+    global x,y
+    y = klik.x
+    x = klik.y
+
+    x = x // 78
+    y = y // 78
+
+    kurzor([x,y],"#ff0000")
+
+def vlevo(klavesa):
+    global y
+    if y != 0:
+        y = y - 1
+    kurzor([x,y],"#ff0000")
+
+def vpravo(klavesa):
+    global y
+    if y != 8:
+        y = y + 1
+    kurzor([x,y],"#ff0000")
+
+def nahoru(klavesa):
+    global x
+    if x != 0:
+        x = x - 1
+    kurzor([x,y],"#ff0000")
+
+def dolu(klavesa):
+    global x
+    if x != 8:
+        x = x + 1
+    kurzor([x,y],"#ff0000")
+
+def kurzor(policko,barva):
+    global kur
+
+    try:
+        C.delete(kur)
+    except:
+        pass
+    x = policko[1]
+    y = policko[0]
+    kur = C.create_rectangle(x*78+10,y*78+10,x*78+11,y*78+68, fill=barva, outline=barva)
+    okno.update()
+
+def cislo(klavesa):
+    global x,y
+    klavesa = klavesa.char
+    if klavesa not in ("1","2","3","4","5","6","7","8","9"):
+        return False
+    try:
+        C.delete(cislaVsudokuOBJ[x][y])
+    except:
+        pass
+    cislaVsudokuOBJ[x][y] = C.create_text(y*78+15,x*78-8, anchor="nw", font="arial 65", fill="#000088", text=klavesa)
+    cislaVsudoku[x][y] = int(klavesa)
+
+    y = y + 1
+    if y == 9:
+        y = 0
+        x = x + 1
+        if x == 9:
+            x = 0
+            y = 0
+
+    kurzor([x,y],"#ff0000")
+
+C = Canvas(okno, height=701,width=701)
+C.create_rectangle(1,1,701,701,outline="#000000", width=3, fill="#ffffff")
+C.bind("<Button 1>",souradnice)
+okno.bind("<Left>",vlevo)
+okno.bind("<Right>",vpravo)
+okno.bind("<Up>",nahoru)
+okno.bind("<Down>",dolu)
+okno.bind("<Key>",cislo)
+
+for i in range(1,9,1):
+    if i in (1,2,4,5,7,8):
+        C.create_rectangle(0,i*78,702,i*78+1, outline="#aaaaaa")
+        C.create_rectangle(i*78,0,i*78+1,702, outline="#aaaaaa")
+
+
+for i in range(1,9,1):
+    if i in(3,6,9):
+        C.create_rectangle(0,i*78,702,i*78+1)
+        C.create_rectangle(i*78,0,i*78+1,702)
+
+C.create_rectangle(1,1,702,702,outline="#000000", width=3)
+
+C.place(x=2,y=2)
+
+okno.mainloop()

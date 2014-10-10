@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from Tkinter import *
+from tkMessageBox import askyesno
 
 okno = Tk()
 okno.minsize(1024,705)
@@ -10,8 +11,8 @@ okno.resizable(0,0)
 okno.title("SuSol")
 
 kur = None
-x = None
-y = None
+x = 0
+y = 0
 cislaVsudoku = [
 [0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0],
@@ -41,77 +42,50 @@ def souradnice(klik):
     y = klik.x
     x = klik.y
 
-    x = x // 78
-    y = y // 78
-
-    kurzor([x,y],"#ff0000")
-
 def vlevo(klavesa):
-    global y
-    if y != 0:
-        y = y - 1
-    kurzor([x,y],"#ff0000")
+    print("vlevo")
 
 def vpravo(klavesa):
-    global y
-    if y != 8:
-        y = y + 1
-    kurzor([x,y],"#ff0000")
+    print("vpravo")
 
 def nahoru(klavesa):
-    global x
-    if x != 0:
-        x = x - 1
-    kurzor([x,y],"#ff0000")
+    print("nahoru")
 
 def dolu(klavesa):
-    global x
-    if x != 8:
-        x = x + 1
-    kurzor([x,y],"#ff0000")
+    print("dolu")
 
-def kurzor(policko,barva):
-    global kur
+def escape(klavesa):
+    print("escape")
 
-    try:
-        C.delete(kur)
-    except:
-        pass
-    x = policko[1]
-    y = policko[0]
-    kur = C.create_rectangle(x*78+10,y*78+10,x*78+11,y*78+68, fill=barva, outline=barva)
-    okno.update()
+def enter(klavesa):
+    print("enter")
 
-def cislo(klavesa):
-    global x,y
-    klavesa = klavesa.char
-    if klavesa not in ("1","2","3","4","5","6","7","8","9"):
-        return False
-    try:
-        C.delete(cislaVsudokuOBJ[x][y])
-    except:
-        pass
-    cislaVsudokuOBJ[x][y] = C.create_text(y*78+15,x*78-8, anchor="nw", font="arial 65", fill="#000088", text=klavesa)
-    cislaVsudoku[x][y] = int(klavesa)
+def key(klavesa):
+    print(klavesa.char)
 
-    y = y + 1
-    if y == 9:
-        y = 0
-        x = x + 1
-        if x == 9:
-            x = 0
-            y = 0
+def klik(klavesa):
+    print("levy klik")
 
-    kurzor([x,y],"#ff0000")
+def bksp(klavesa):
+    print("backspace")
+
+
+
+
 
 C = Canvas(okno, height=701,width=701)
 C.create_rectangle(1,1,701,701,outline="#000000", width=3, fill="#ffffff")
-C.bind("<Button 1>",souradnice)
 okno.bind("<Left>",vlevo)
 okno.bind("<Right>",vpravo)
 okno.bind("<Up>",nahoru)
 okno.bind("<Down>",dolu)
-okno.bind("<Key>",cislo)
+okno.bind("<Escape>",escape)
+okno.bind("<Return>",enter)
+okno.bind("<Key>",key)
+okno.bind("<Button 1>",klik)
+okno.bind("<BackSpace>",bksp)
+
+
 
 for i in range(1,9,1):
     if i in (1,2,4,5,7,8):
@@ -121,11 +95,35 @@ for i in range(1,9,1):
 
 for i in range(1,9,1):
     if i in(3,6,9):
-        C.create_rectangle(0,i*78,702,i*78+1)
-        C.create_rectangle(i*78,0,i*78+1,702)
+        C.create_rectangle(0,i*78,702,i*78+2, fill="#000000")
+        C.create_rectangle(i*78,0,i*78+2,702, fill="#000000")
 
 C.create_rectangle(1,1,702,702,outline="#000000", width=3)
-
 C.place(x=2,y=2)
+
+menu = Label(okno, text="MENU", font="Arial 20 bold")
+menu.place(x=822,y=10)
+
+log = Label(okno, text="LOG", font="Arial 20 bold")
+log.place(x=832,y=330)
+
+lgC = Canvas(okno, width=270, height=320, bg="#ffffff")
+lgC.place(x=730, y=370)
+
+opt1 = Canvas(okno,width=200, height=50, bg="#ffffff")
+text1 = opt1.create_text(100,25,text="Zadání (z)", font="Arial 20")
+opt1.place(x=765,y=50)
+
+opt2 = Canvas(okno,width=200, height=50, bg="#ffffff")
+text2 = opt2.create_text(100,25,text="Řešení (r)", font="Arial 20")
+opt2.place(x=765,y=120)
+
+opt3 = Canvas(okno,width=200, height=50, bg="#ffffff")
+text3 = opt3.create_text(100,25,text="Návod (n)", font="Arial 20")
+opt3.place(x=765,y=190)
+
+opt4 = Canvas(okno,width=200, height=50, bg="#ffffff")
+text4 = opt4.create_text(100,25,text="Konec (Esc)", font="Arial 20")
+opt4.place(x=765,y=260)
 
 okno.mainloop()

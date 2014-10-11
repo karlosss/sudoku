@@ -37,6 +37,146 @@ cislaVsudokuOBJ = [
 [None,None,None,None,None,None,None,None,None]
 ]
 
+polozkyMenu = [None,None,None,None]
+menuCesta = []
+
+def konec():
+    if askyesno("Konec","Opravdu chcete skončit?"):
+        okno.destroy()
+
+
+def vzdat():
+    global menuCesta
+
+    if askyesno("Vzdát se","Opravdu se chcete vzdát?"):
+        del menuCesta[len(menuCesta)-1]
+        prechod_v_menu(menuCesta)
+
+def prechod_v_menu(kam):
+    global polozkyMenu
+
+    for i in polozkyMenu:
+        try:
+            i.destroy()
+        except:
+            pass
+
+    if kam == [0]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Ručně (r)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Z databáze (d)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Vygenerovat (g)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == []:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Zadání (z)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Řešení (r)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Návod (n)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Konec (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [0,0]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Klávesnice (k)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Webkamera (w)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [1]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Řešit na čas (r)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Trénink (t)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Vyřešit PC (v)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [1,1]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Zkontrolovat (z)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Poradit (p)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Uložit (u)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [2]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Sudoku (s)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="SuSol (u)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [2,1]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Manuál (m)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="O programu (o)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    elif kam == [1,0]:
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Vzdát se (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+
+    okno.update()
+
+
+
 def souradnice(klik):
     global x,y
     y = klik.x
@@ -55,16 +195,62 @@ def dolu(klavesa):
     print("dolu")
 
 def escape(klavesa):
-    print("escape")
+    global menuCesta
+
+    if menuCesta == []:
+        konec()
+        return False
+
+    elif menuCesta == [1,0]:
+        vzdat()
+        return False
+
+    del menuCesta[len(menuCesta)-1]
+    prechod_v_menu(menuCesta)
 
 def enter(klavesa):
     print("enter")
 
 def key(klavesa):
-    print(klavesa.char)
+    global menuCesta
+    klavesa = klavesa.char
+
+    if menuCesta == []:
+        if klavesa == "z" or klavesa == "Z":
+            menuCesta = [0]
+            prechod_v_menu(menuCesta)
+        elif klavesa == "r" or klavesa == "R":
+            menuCesta = [1]
+            prechod_v_menu(menuCesta)
+        elif klavesa == "n" or klavesa == "N":
+            menuCesta = [2]
+            prechod_v_menu(menuCesta)
+
+    elif menuCesta == [0]:
+        if klavesa == "r" or klavesa == "R":
+            menuCesta = [0,0]
+            prechod_v_menu(menuCesta)
+
+    elif menuCesta == [1]:
+        if klavesa == "r" or klavesa == "R":
+            menuCesta = [1,0]
+            prechod_v_menu(menuCesta)
+        if klavesa == "t" or klavesa == "T":
+            menuCesta = [1,1]
+            prechod_v_menu(menuCesta)
+
+    elif menuCesta == [2]:
+        if klavesa == "u" or klavesa == "U":
+            menuCesta = [2,1]
+            prechod_v_menu(menuCesta)
+
+
 
 def klik(klavesa):
     print("levy klik")
+
+def Rklik(klavesa):
+    print("pravy klik")
 
 def bksp(klavesa):
     print("backspace")
@@ -75,6 +261,7 @@ def bksp(klavesa):
 
 C = Canvas(okno, height=701,width=701)
 C.create_rectangle(1,1,701,701,outline="#000000", width=3, fill="#ffffff")
+okno.protocol("WM_DELETE_WINDOW",konec)
 okno.bind("<Left>",vlevo)
 okno.bind("<Right>",vpravo)
 okno.bind("<Up>",nahoru)
@@ -83,14 +270,15 @@ okno.bind("<Escape>",escape)
 okno.bind("<Return>",enter)
 okno.bind("<Key>",key)
 okno.bind("<Button 1>",klik)
+okno.bind("<Button 3>", Rklik)
 okno.bind("<BackSpace>",bksp)
 
 
 
 for i in range(1,9,1):
     if i in (1,2,4,5,7,8):
-        C.create_rectangle(0,i*78,702,i*78+1, outline="#aaaaaa")
-        C.create_rectangle(i*78,0,i*78+1,702, outline="#aaaaaa")
+        C.create_rectangle(0,i*78,699,i*78+1, outline="#aaaaaa")
+        C.create_rectangle(i*78,0,i*78+1,699, outline="#aaaaaa")
 
 
 for i in range(1,9,1):
@@ -110,20 +298,20 @@ log.place(x=832,y=330)
 lgC = Canvas(okno, width=270, height=320, bg="#ffffff")
 lgC.place(x=730, y=370)
 
-opt1 = Canvas(okno,width=200, height=50, bg="#ffffff")
-text1 = opt1.create_text(100,25,text="Zadání (z)", font="Arial 20")
-opt1.place(x=765,y=50)
+polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+polozkyMenu[0].create_text(100,25,text="Zadání (z)", font="Arial 20")
+polozkyMenu[0].place(x=765,y=50)
 
-opt2 = Canvas(okno,width=200, height=50, bg="#ffffff")
-text2 = opt2.create_text(100,25,text="Řešení (r)", font="Arial 20")
-opt2.place(x=765,y=120)
+polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+polozkyMenu[1].create_text(100,25,text="Řešení (r)", font="Arial 20")
+polozkyMenu[1].place(x=765,y=120)
 
-opt3 = Canvas(okno,width=200, height=50, bg="#ffffff")
-text3 = opt3.create_text(100,25,text="Návod (n)", font="Arial 20")
-opt3.place(x=765,y=190)
+polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+polozkyMenu[2].create_text(100,25,text="Návod (n)", font="Arial 20")
+polozkyMenu[2].place(x=765,y=190)
 
-opt4 = Canvas(okno,width=200, height=50, bg="#ffffff")
-text4 = opt4.create_text(100,25,text="Konec (Esc)", font="Arial 20")
-opt4.place(x=765,y=260)
+polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+polozkyMenu[3].create_text(100,25,text="Konec (Esc)", font="Arial 20")
+polozkyMenu[3].place(x=765,y=260)
 
 okno.mainloop()

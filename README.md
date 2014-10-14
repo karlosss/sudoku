@@ -10,6 +10,11 @@ dne 9. 10. zahájena tvorba GUI, budoucnost webkamery zatím nejistá
 dne 7. 10. přidán changelog
 
 
+
+
+
+
+
 Sudoku solver, generátor, OCR, encyklopedie strategií a vůbec všechno možné :)
 Současná verze je zatím pouze solverem, zato však se 100% úspěšností a časem v nejhorších případech okolo 400 ms, standardně však kolem 50 ms.
 

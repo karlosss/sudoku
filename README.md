@@ -3,9 +3,9 @@ SuSol
 
 Changelog:
 
-14. 10. do GUI lze zapisovat sudoku pomocí klávesnice, vymyšleno jméno: SUdokuSOLver = SuSol
-9. 10. zahájena tvorba GUI, budoucnost webkamery zatím nejistá
-7. 10. přidán changelog
+dne 14. 10. do GUI lze zapisovat sudoku pomocí klávesnice, vymyšleno jméno: SUdokuSOLver = SuSol
+dne 9. 10. zahájena tvorba GUI, budoucnost webkamery zatím nejistá
+dne 7. 10. přidán changelog
 
 
 Sudoku solver, generátor, OCR, encyklopedie strategií a vůbec všechno možné :)

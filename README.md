@@ -9,8 +9,7 @@ dne 9. 10. zahájena tvorba GUI, budoucnost webkamery zatím nejistá
 
 dne 7. 10. přidán changelog
 
-
-
+<br><br><br><br>
 
 
 

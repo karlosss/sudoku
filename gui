@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 from Tkinter import *
-from tkMessageBox import askyesno
+from tkMessageBox import askyesno, showinfo, showwarning
 from time import asctime
 from sqlite3 import connect
 
@@ -30,6 +30,8 @@ cislaVsudoku = [
 ]
 
 editace = False
+zobrazovaneSudoku = 0
+datalist = []
 
 cislaVsudokuOBJ = [
 [None,None,None,None,None,None,None,None,None],
@@ -47,7 +49,7 @@ polozkyMenu = [None,None,None,None]
 menuCesta = []
 
 def zahodit():
-    global cislaVsudoku, editace, cislaVsudokuOBJ
+    global cislaVsudoku, editace, cislaVsudokuOBJ, menuCesta
 
     cislaVsudoku = [
     [0,0,0,0,0,0,0,0,0],
@@ -71,8 +73,25 @@ def zahodit():
             except:
                 continue
 
+    menuCesta = [0,0,0]
+    prechod_v_menu(menuCesta)
+
 def hotovo():
     global editace, cislaVsudokuOBJ
+
+    if cislaVsudoku == [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]:
+        showwarning("Upozornění","Sudoku je prázdné, nemohu jej uložit.")
+        return False
 
     casExport = asctime()
     sudokuExport = ""
@@ -97,6 +116,8 @@ def hotovo():
                 continue
             if cislaVsudoku[i][j] != 0:
                 cislaVsudokuOBJ[i][j] = C.create_text(j*78+39,i*78+41, text=cislaVsudoku[i][j], font="arial 70 bold", fill="#000000")
+
+    return True
 
 
 def zapsatCislo(cislo):
@@ -148,16 +169,58 @@ def kurzor(kam):
 
 
 def konec():
-    if askyesno("Konec","Opravdu chcete skončit?"):
+    if askyesno("Dotaz","Opravdu chcete skončit?"):
         okno.destroy()
 
 
 def vzdat():
     global menuCesta
 
-    if askyesno("Vzdát se","Opravdu se chcete vzdát?"):
+    if askyesno("Dotaz","Opravdu se chcete vzdát?"):
         del menuCesta[len(menuCesta)-1]
         prechod_v_menu(menuCesta)
+
+def vykreslit_sudoku(sd,barva):
+    global cislaVsudoku, cislaVsudokuOBJ
+
+    if sd != cislaVsudoku:
+        for i in range(0,9,1):
+            for j in range(0,9,1):
+                cislaVsudoku[i][j] = sd[i][j]
+
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            try:
+                C.delete(cislaVsudokuOBJ[i][j])
+            except:
+                continue
+            if cislaVsudoku[i][j] != 0:
+                cislaVsudokuOBJ[i][j] = C.create_text(j*78+39,i*78+41, text=cislaVsudoku[i][j], font="arial 70 bold", fill=barva)
+
+
+def smazat_sudoku():
+    global cislaVsudoku, cislaVsudokuOBJ
+
+    cislaVsudoku = [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]
+
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            try:
+                C.delete(cislaVsudokuOBJ[i][j])
+            except:
+                continue
+
+
 
 def prechod_v_menu(kam):
     global polozkyMenu
@@ -170,7 +233,7 @@ def prechod_v_menu(kam):
 
     if kam == [0]:
         polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[0].create_text(100,25,text="Ručně (r)", font="Arial 20")
+        polozkyMenu[0].create_text(100,25,text="Nové (n)", font="Arial 20")
         polozkyMenu[0].place(x=765,y=50)
         polozkyMenu[0].bind("<Enter>",najeti0)
         polozkyMenu[0].bind("<Leave>",sjeti0)
@@ -373,24 +436,23 @@ def prechod_v_menu(kam):
         polozkyMenu[3].bind("<Button 1>",klik3)
 
     elif kam == [1,0]:
-        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[3].create_text(100,25,text="Vzdát se (Esc)", font="Arial 20")
-        polozkyMenu[3].place(x=765,y=260)
-
-    elif kam == [0,0,0]:
         polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[0].create_text(100,25,text="Editovat (Enter)", font="Arial 20")
+        polozkyMenu[0].create_text(100,25,text="Řešit (r)", font="Arial 20")
         polozkyMenu[0].place(x=765,y=50)
         polozkyMenu[0].bind("<Enter>",najeti0)
         polozkyMenu[0].bind("<Leave>",sjeti0)
         polozkyMenu[0].bind("<Button 1>",klik0)
 
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Výsledky (v)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+        polozkyMenu[1].bind("<Enter>",najeti1)
+        polozkyMenu[1].bind("<Leave>",sjeti1)
+        polozkyMenu[1].bind("<Button 1>",klik1)
+
         polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].create_text(100,25,text="Vzdát se (Esc)", font="Arial 20")
         polozkyMenu[3].place(x=765,y=260)
-        polozkyMenu[3].bind("<Enter>",najeti3)
-        polozkyMenu[3].bind("<Leave>",sjeti3)
-        polozkyMenu[3].bind("<Button 1>",klik3)
 
     elif kam == [0,0,0,0]:
         polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
@@ -465,7 +527,96 @@ def prechod_v_menu(kam):
         polozkyMenu[3].bind("<Leave>",sjeti3)
         polozkyMenu[3].bind("<Button 1>",klik3)
 
+    elif kam == [0,1,0,1]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Uložit (Enter)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+        polozkyMenu[0].bind("<Enter>",najeti0)
+        polozkyMenu[0].bind("<Leave>",sjeti0)
+        polozkyMenu[0].bind("<Button 1>",klik0)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zahodit (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+        polozkyMenu[3].bind("<Enter>",najeti3)
+        polozkyMenu[3].bind("<Leave>",sjeti3)
+        polozkyMenu[3].bind("<Button 1>",klik3)
+
     okno.update()
+
+def z_databaze():
+    global zobrazovaneSudoku, datalist
+
+    datab = db.execute("select * from zadani")
+    datalist = []
+
+    for i in datab:
+        datalist.append(i)
+
+    if datalist == []:
+        escape(0)
+        smazat_sudoku()
+        showinfo("Info","V databázi se žádné sudoku nenachází.")
+        return False
+
+    zobrazovaneSudoku = len(datalist)-1
+
+    sudoku = preformatovat_sudoku(datalist[zobrazovaneSudoku][1])
+    vykreslit_sudoku(sudoku,"#dddddd")
+
+def preformatovat_sudoku(sd):
+    vstupni_pole = []
+    for i in range(0,9,1):
+        vstupni_pole.append([])
+        for j in range(0,9,1):
+            vstupni_pole[i].append(int(sd[i*9+j]))
+
+    return vstupni_pole
+
+def vyber_predchozi():
+    global zobrazovaneSudoku
+
+    if zobrazovaneSudoku > 0:
+        zobrazovaneSudoku = zobrazovaneSudoku - 1
+    else:
+        zobrazovaneSudoku = len(datalist)-1
+
+    sudoku = preformatovat_sudoku(datalist[zobrazovaneSudoku][1])
+    vykreslit_sudoku(sudoku,"#dddddd")
+
+def vyber_nasledujici():
+    global zobrazovaneSudoku
+
+    if zobrazovaneSudoku < len(datalist)-1:
+        zobrazovaneSudoku = zobrazovaneSudoku + 1
+    else:
+        zobrazovaneSudoku = 0
+
+    sudoku = preformatovat_sudoku(datalist[zobrazovaneSudoku][1])
+    vykreslit_sudoku(sudoku,"#dddddd")
+
+def vymazat_z_databaze():
+    global menuCesta
+
+    db.execute("delete from zadani where vytvoreni='"+datalist[zobrazovaneSudoku][0]+"'")
+    db.commit()
+
+    del menuCesta[len(menuCesta)-1]
+    prechod_v_menu(menuCesta)
+
+    z_databaze()
+    print(datalist)
+
+def nacist_z_databaze():
+    global menuCesta
+
+    vykreslit_sudoku(cislaVsudoku,"#000000")
+    menuCesta = []
+    prechod_v_menu(menuCesta)
+
+
+
+
 
 
 def najeti0(x):
@@ -533,7 +684,7 @@ def vlevo(klavesa):
         kurzor([x,y])
 
     if menuCesta == [0,1]:
-        print("FUNKCE PREDCH")
+        vyber_predchozi()
 
 def vpravo(klavesa):
     global x,y
@@ -549,7 +700,7 @@ def vpravo(klavesa):
         kurzor([x,y])
 
     if menuCesta == [0,1]:
-        print("MENU NASL.")
+        vyber_nasledujici()
 
 def nahoru(klavesa):
     global x,y
@@ -583,10 +734,16 @@ def escape(klavesa):
         return False
 
     elif menuCesta == [0,0,0,0]:
-        if not askyesno("Zahodit","Opravdu chcete sudoku zahodit? Již nebude možno jej znovu obnovit!"):
+        if not askyesno("Dotaz","Opravdu chcete sudoku zahodit? Již nebude možno jej znovu obnovit!"):
             return False
         else:
             zahodit()
+
+    elif menuCesta == [0,1,0]:
+        vykreslit_sudoku(cislaVsudoku, "#dddddd")
+
+    elif menuCesta == [0,1]:
+        smazat_sudoku()
 
     del menuCesta[len(menuCesta)-1]
     prechod_v_menu(menuCesta)
@@ -594,20 +751,30 @@ def escape(klavesa):
 def enter(klavesa):
     global menuCesta
 
-    if menuCesta == [0,0,0]:
+    if menuCesta == [0,0]:
         menuCesta = [0,0,0,0]
         prechod_v_menu(menuCesta)
         editovat()
 
     elif menuCesta == [0,0,0,0]:
-        menuCesta = [0,0,0]
-        prechod_v_menu(menuCesta)
-        hotovo()
+        if hotovo():
+            menuCesta = [0,0]
+            prechod_v_menu(menuCesta)
+
 
     elif menuCesta == [0,1]:
         menuCesta = [0,1,0]
         prechod_v_menu(menuCesta)
-        print("FUNKCE VYBRAT")
+        vykreslit_sudoku(cislaVsudoku,"#888888")
+
+    elif menuCesta == [0,1,0]:
+        nacist_z_databaze()
+
+    elif menuCesta == [0,1,0,1]:
+        if hotovo():
+            menuCesta = [0,1,0]
+            prechod_v_menu(menuCesta)
+            vykreslit_sudoku(cislaVsudoku,"#888888")
 
 def key(klavesa):
     global menuCesta
@@ -631,12 +798,13 @@ def key(klavesa):
             prechod_v_menu(menuCesta)
 
     elif menuCesta == [0]:
-        if klavesa == "r" or klavesa == "R":
+        if klavesa == "n" or klavesa == "N":
             menuCesta = [0,0]
             prechod_v_menu(menuCesta)
         elif klavesa == "d" or klavesa == "D":
             menuCesta = [0,1]
             prechod_v_menu(menuCesta)
+            z_databaze()
         elif klavesa == "g" or klavesa == "G":
             print("FUNKCE VYGENEROVAT")
 
@@ -659,8 +827,23 @@ def key(klavesa):
 
     elif menuCesta == [0,0]:
         if klavesa == "k" or klavesa == "K":
-            menuCesta = [0,0,0]
+            menuCesta = [0,0,0,0]
             prechod_v_menu(menuCesta)
+            smazat_sudoku()
+            editovat()
+
+    elif menuCesta == [0,1,0]:
+        if klavesa == "E" or klavesa == "e":
+            menuCesta = [0,1,0,1]
+            prechod_v_menu(menuCesta)
+            editovat()
+
+
+    elif menuCesta == [1,0]:
+        if klavesa == "r" or klavesa == "R":
+            print("resit")
+        elif klavesa == "v" or klavesa == "V":
+            print("vysledky")
 
 
 
@@ -684,6 +867,10 @@ def delete(klavesa):
 
     if editace:
         zapsatCislo("0")
+
+    if menuCesta == [0,1,0]:
+        if askyesno("Dotaz","Opravdu chcete toto sudoku vymazat z databáze?"):
+            vymazat_z_databaze()
 
 
 

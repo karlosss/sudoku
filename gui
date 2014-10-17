@@ -3,12 +3,16 @@
 from __future__ import print_function
 from Tkinter import *
 from tkMessageBox import askyesno
+from time import asctime
+from sqlite3 import connect
 
 okno = Tk()
 okno.minsize(1024,705)
 okno.maxsize(1024,705)
 okno.resizable(0,0)
 okno.title("SuSol")
+
+db = connect("data.db")
 
 kur = None
 x = 0
@@ -42,11 +46,48 @@ cislaVsudokuOBJ = [
 polozkyMenu = [None,None,None,None]
 menuCesta = []
 
-def hotovo():
-    global editace, cislaVsudokuOBJ
+def zahodit():
+    global cislaVsudoku, editace, cislaVsudokuOBJ
+
+    cislaVsudoku = [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]
 
     editace = False
     C.delete(kur)
+
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            try:
+                C.delete(cislaVsudokuOBJ[i][j])
+            except:
+                continue
+
+def hotovo():
+    global editace, cislaVsudokuOBJ
+
+    casExport = asctime()
+    sudokuExport = ""
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            sudokuExport = sudokuExport + str(cislaVsudoku[i][j])
+
+    db.execute("insert into zadani(vytvoreni,zadani) values('"+casExport+"','"+sudokuExport+"')")
+    db.commit()
+
+    editace = False
+    try:
+        C.delete(kur)
+    except:
+        pass
 
     for i in range(0,9,1):
         for j in range(0,9,1):
@@ -353,7 +394,7 @@ def prechod_v_menu(kam):
 
     elif kam == [0,0,0,0]:
         polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[0].create_text(100,25,text="Hotovo (Enter)", font="Arial 20")
+        polozkyMenu[0].create_text(100,25,text="Uložit (Enter)", font="Arial 20")
         polozkyMenu[0].place(x=765,y=50)
         polozkyMenu[0].bind("<Enter>",najeti0)
         polozkyMenu[0].bind("<Leave>",sjeti0)
@@ -365,6 +406,65 @@ def prechod_v_menu(kam):
         polozkyMenu[3].bind("<Enter>",najeti3)
         polozkyMenu[3].bind("<Leave>",sjeti3)
         polozkyMenu[3].bind("<Button 1>",klik3)
+
+    elif kam == [0,1]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Vybrat (Enter)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+        polozkyMenu[0].bind("<Enter>",najeti0)
+        polozkyMenu[0].bind("<Leave>",sjeti0)
+        polozkyMenu[0].bind("<Button 1>",klik0)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Předch. (Left)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+        polozkyMenu[1].bind("<Enter>",najeti1)
+        polozkyMenu[1].bind("<Leave>",sjeti1)
+        polozkyMenu[1].bind("<Button 1>",klik1)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Násl. (Right)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+        polozkyMenu[2].bind("<Enter>",najeti2)
+        polozkyMenu[2].bind("<Leave>",sjeti2)
+        polozkyMenu[2].bind("<Button 1>",klik2)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+        polozkyMenu[3].bind("<Enter>",najeti3)
+        polozkyMenu[3].bind("<Leave>",sjeti3)
+        polozkyMenu[3].bind("<Button 1>",klik3)
+
+    elif kam == [0,1,0]:
+        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[0].create_text(100,25,text="Načíst (Enter)", font="Arial 20")
+        polozkyMenu[0].place(x=765,y=50)
+        polozkyMenu[0].bind("<Enter>",najeti0)
+        polozkyMenu[0].bind("<Leave>",sjeti0)
+        polozkyMenu[0].bind("<Button 1>",klik0)
+
+        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[1].create_text(100,25,text="Editovat (e)", font="Arial 20")
+        polozkyMenu[1].place(x=765,y=120)
+        polozkyMenu[1].bind("<Enter>",najeti1)
+        polozkyMenu[1].bind("<Leave>",sjeti1)
+        polozkyMenu[1].bind("<Button 1>",klik1)
+
+        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[2].create_text(100,25,text="Smazat (Delete)", font="Arial 20")
+        polozkyMenu[2].place(x=765,y=190)
+        polozkyMenu[2].bind("<Enter>",najeti2)
+        polozkyMenu[2].bind("<Leave>",sjeti2)
+        polozkyMenu[2].bind("<Button 1>",klik2)
+
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+        polozkyMenu[3].bind("<Enter>",najeti3)
+        polozkyMenu[3].bind("<Leave>",sjeti3)
+        polozkyMenu[3].bind("<Button 1>",klik3)
+
     okno.update()
 
 
@@ -432,6 +532,9 @@ def vlevo(klavesa):
 
         kurzor([x,y])
 
+    if menuCesta == [0,1]:
+        print("FUNKCE PREDCH")
+
 def vpravo(klavesa):
     global x,y
 
@@ -444,6 +547,9 @@ def vpravo(klavesa):
                 x = 0
 
         kurzor([x,y])
+
+    if menuCesta == [0,1]:
+        print("MENU NASL.")
 
 def nahoru(klavesa):
     global x,y
@@ -480,7 +586,7 @@ def escape(klavesa):
         if not askyesno("Zahodit","Opravdu chcete sudoku zahodit? Již nebude možno jej znovu obnovit!"):
             return False
         else:
-            print("FUNKCE ZAHODIT")
+            zahodit()
 
     del menuCesta[len(menuCesta)-1]
     prechod_v_menu(menuCesta)
@@ -497,6 +603,11 @@ def enter(klavesa):
         menuCesta = [0,0,0]
         prechod_v_menu(menuCesta)
         hotovo()
+
+    elif menuCesta == [0,1]:
+        menuCesta = [0,1,0]
+        prechod_v_menu(menuCesta)
+        print("FUNKCE VYBRAT")
 
 def key(klavesa):
     global menuCesta
@@ -524,7 +635,8 @@ def key(klavesa):
             menuCesta = [0,0]
             prechod_v_menu(menuCesta)
         elif klavesa == "d" or klavesa == "D":
-            print("FUNKCE Z DATABAZE")
+            menuCesta = [0,1]
+            prechod_v_menu(menuCesta)
         elif klavesa == "g" or klavesa == "G":
             print("FUNKCE VYGENEROVAT")
 

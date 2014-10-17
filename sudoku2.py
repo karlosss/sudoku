@@ -20,18 +20,26 @@ raw = [
 
 
 def kontrola_vstupu(vstup):
-    """kontrola uzivatelskeho vstupu"""
+    if type(vstup) == "str":
+        vstupni_pole = []
+        for i in range(0,9,1):
+            vstupni_pole.append([])
+            for j in range(0,9,1):
+                vstupni_pole[i].append(int(vstup[i*9+j]))
+
+        vstup = vstupni_pole
+
     if len(vstup) != 9:
         print("neplatny vstup")
-        exit()
+        return False
     for i in vstup:
         if len(i) != 9:
             print("neplatny vstup")
-            exit()
+            return False
         for j in i:
             if j not in range(0,10,1):
                 print("neplatny vstup")
-                exit()
+                return False
 
 def generate_candidates(template):
     """vygeneruje kandidaty pro nezadana policka"""

@@ -42,7 +42,6 @@ def kontrola_vstupu(vstup):
                 return False
 
 def generate_candidates(template):
-    """vygeneruje kandidaty pro nezadana policka"""
     cand = [
     [[],[],[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[],[],[]],
@@ -63,7 +62,6 @@ def generate_candidates(template):
     return cand
 
 def pravidlova_zkouska(cand):
-    """algoritmus kontroly pravidel sudoku"""
     for i in range(0,9,1):
         removeRadek = []
         removeSloupec = []

@@ -5,6 +5,8 @@ from Tkinter import *
 from tkMessageBox import askyesno, showinfo, showwarning
 from time import asctime
 from sqlite3 import connect
+from copy import deepcopy
+from random import randint
 
 okno = Tk()
 okno.minsize(1024,705)
@@ -15,6 +17,10 @@ okno.title("SuSol")
 db = connect("data.db")
 
 kur = None
+trenink = False
+zadaniSudoku = None
+zkontrolovani = False
+funkcePoradit = False
 x = 0
 y = 0
 cislaVsudoku = [
@@ -32,6 +38,10 @@ cislaVsudoku = [
 editace = False
 zobrazovaneSudoku = 0
 datalist = []
+
+resimPrazdnouMrizku = None
+
+PrvniKontrola = True
 
 cislaVsudokuOBJ = [
 [None,None,None,None,None,None,None,None,None],
@@ -141,6 +151,30 @@ def zapsatCislo(cislo):
 
     kurzor([x,y])
 
+def doplnTrenink(cislo):
+    global x,y, cislaVsudokuOBJ, cislaVsudoku
+
+    if zadaniSudoku[x][y] != 0:
+        return False
+
+    try:
+        C.delete(cislaVsudokuOBJ[x][y])
+    except:
+        pass
+
+    if cislo != "0":
+        cislaVsudokuOBJ[x][y] = C.create_text(y*78+39,x*78+41, text=cislo, font="arial 70 bold", fill="#0000ff")
+    cislaVsudoku[x][y] = int(cislo)
+
+    y = y + 1
+    if y == 9:
+        y = 0
+        x = x + 1
+        if x == 9:
+            x = 0
+
+    kurzor([x,y])
+
 
 def editovat():
     global cislaVsudoku, editace, x, y
@@ -197,6 +231,28 @@ def vykreslit_sudoku(sd,barva):
             if cislaVsudoku[i][j] != 0:
                 cislaVsudokuOBJ[i][j] = C.create_text(j*78+39,i*78+41, text=cislaVsudoku[i][j], font="arial 70 bold", fill=barva)
 
+def vykreslit_dvoubarevne_sudoku(sd1,sd2,barva1,barva2):
+    global cislaVsudokuOBJ
+
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            if sd2[i][j] != 0 and sd1[i][j] == 0:
+                try:
+                    C.delete(cislaVsudokuOBJ[i][j])
+                except:
+                    pass
+                if cislaVsudoku[i][j] != 0:
+                    cislaVsudokuOBJ[i][j] = C.create_text(j*78+39,i*78+41, text=sd2[i][j], font="arial 70 bold", fill=barva2)
+
+            elif sd1 != 0:
+                try:
+                    C.delete(cislaVsudokuOBJ[i][j])
+                except:
+                    pass
+                if cislaVsudoku[i][j] != 0:
+                    cislaVsudokuOBJ[i][j] = C.create_text(j*78+39,i*78+41, text=sd1[i][j], font="arial 70 bold", fill=barva1)
+
+
 
 def smazat_sudoku():
     global cislaVsudoku, cislaVsudokuOBJ
@@ -240,7 +296,7 @@ def prechod_v_menu(kam):
         polozkyMenu[0].bind("<Button 1>",klik0)
 
         polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[1].create_text(100,25,text="Z databáze (d)", font="Arial 20")
+        polozkyMenu[1].create_text(100,25,text="Databáze (d)", font="Arial 20")
         polozkyMenu[1].place(x=765,y=120)
         polozkyMenu[1].bind("<Enter>",najeti1)
         polozkyMenu[1].bind("<Leave>",sjeti1)
@@ -355,13 +411,6 @@ def prechod_v_menu(kam):
         polozkyMenu[1].bind("<Leave>",sjeti1)
         polozkyMenu[1].bind("<Button 1>",klik1)
 
-        polozkyMenu[2] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[2].create_text(100,25,text="Uložit (u)", font="Arial 20")
-        polozkyMenu[2].place(x=765,y=190)
-        polozkyMenu[2].bind("<Enter>",najeti2)
-        polozkyMenu[2].bind("<Leave>",sjeti2)
-        polozkyMenu[2].bind("<Button 1>",klik2)
-
         polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
         polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
         polozkyMenu[3].place(x=765,y=260)
@@ -451,7 +500,7 @@ def prechod_v_menu(kam):
         polozkyMenu[1].bind("<Button 1>",klik1)
 
         polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[3].create_text(100,25,text="Vzdát se (Esc)", font="Arial 20")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
         polozkyMenu[3].place(x=765,y=260)
 
     elif kam == [0,0,0,0]:
@@ -542,6 +591,14 @@ def prechod_v_menu(kam):
         polozkyMenu[3].bind("<Leave>",sjeti3)
         polozkyMenu[3].bind("<Button 1>",klik3)
 
+    elif kam == [1,2]:
+        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
+        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
+        polozkyMenu[3].place(x=765,y=260)
+        polozkyMenu[3].bind("<Enter>",najeti3)
+        polozkyMenu[3].bind("<Leave>",sjeti3)
+        polozkyMenu[3].bind("<Button 1>",klik3)
+
     okno.update()
 
 def z_databaze():
@@ -572,6 +629,26 @@ def preformatovat_sudoku(sd):
             vstupni_pole[i].append(int(sd[i*9+j]))
 
     return vstupni_pole
+
+def treninkF():
+    global trenink, kur, x, y, zadaniSudoku, PrvniKontrola
+
+    candidates = generate_candidates(cislaVsudoku)
+    candidates = kontrola(candidates)
+    if candidates == False:
+        return False
+
+    PrvniKontrola = False
+    candidates = brute_force(candidates)
+    PrvniKontrola = True
+
+    x = 0
+    y = 0
+
+    trenink = True
+    zadaniSudoku = deepcopy(cislaVsudoku)
+    kurzor([0,0])
+
 
 def vyber_predchozi():
     global zobrazovaneSudoku
@@ -605,7 +682,6 @@ def vymazat_z_databaze():
     prechod_v_menu(menuCesta)
 
     z_databaze()
-    print(datalist)
 
 def nacist_z_databaze():
     global menuCesta
@@ -614,7 +690,121 @@ def nacist_z_databaze():
     menuCesta = []
     prechod_v_menu(menuCesta)
 
+def init_reseni():
+    if cislaVsudoku == [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]:
+        if askyesno("Dotaz","Chystáte se řešit prázdnou mřížku. Dosažený výsledek nebude zaznamenán. Chcete pokračovat?"):
+            return True
+        else:
+            return False
+    else:
+        return True
 
+
+def vyresitPC():
+    global cislaVsudoku, PrvniKontrola, menuCesta, zadaniSudoku
+
+    if not askyesno("Dotaz","Počítač vyřeší celé sudoku. Chcete pokračovat?"):
+        return False
+    else:
+        zadaniSudoku = deepcopy(cislaVsudoku)
+
+        candidates = generate_candidates(cislaVsudoku)
+        candidates = kontrola(candidates)
+        if candidates == False:
+            return False
+
+        PrvniKontrola = False
+        candidates = brute_force(candidates)
+        PrvniKontrola = True
+
+        if candidates == False:
+            return False
+        else:
+            for i in range(0,9,1):
+                for j in range(0,9,1):
+                    cislaVsudoku[i][j] = candidates[i][j][0]
+            vykreslit_dvoubarevne_sudoku(zadaniSudoku,cislaVsudoku,"#000000","#000088")
+            menuCesta = [1,2]
+            prechod_v_menu(menuCesta)
+
+def zkontrolovat():
+    global PrvniKontrola, zkontrolovani
+
+    zkontrolovani = True
+
+    candidates = generate_candidates(cislaVsudoku)
+    candidates = kontrola(candidates)
+    if candidates == False:
+        if funkcePoradit == False:
+            showwarning("Upozornění","Sudoku obsahuje chyby.")
+        return False
+    PrvniKontrola = False
+    candidates = brute_force(candidates)
+    PrvniKontrola = True
+    if candidates == False:
+        if funkcePoradit == False:
+            showwarning("Upozornění","Sudoku obsahuje chyby.")
+        return False
+
+    if funkcePoradit == False:
+        showinfo("Info","Sudoku je bez chyb.")
+    return True
+
+def poradit():
+    global PrvniKontrola, cislaVsudoku, funkcePoradit
+
+    funkcePoradit = True
+
+    if zkontrolovat() == False:
+        showwarning("Upozornění","Sudoku obsahuje chyby. Nejprve je opravte.")
+        funkcePoradit = False
+        return False
+
+    spravneReseni = [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]
+
+    candidates = generate_candidates(cislaVsudoku)
+    candidates = kontrola(candidates)
+    PrvniKontrola = False
+    candidates = brute_force(candidates)
+    PrvniKontrola = True
+
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            spravneReseni[i][j] = candidates[i][j][0]
+
+    i = randint(0,8)
+    j = randint(0,8)
+    if "0" in stringFormat(cislaVsudoku):
+        while not cislaVsudoku[i][j] == 0:
+            i = randint(0,8)
+            j = randint(0,8)
+    else:
+        showinfo("Info","Sudoku je již vyřešeno.")
+
+    cislaVsudoku[i][j] = spravneReseni[i][j]
+
+    vykreslit_dvoubarevne_sudoku(zadaniSudoku,cislaVsudoku,"#000000","#0000ff")
+    funkcePoradit = False
 
 
 
@@ -673,7 +863,7 @@ def souradnice(klik):
 def vlevo(klavesa):
     global x,y
 
-    if editace:
+    if editace or trenink:
         y = y - 1
         if y == -1:
             y = 8
@@ -689,7 +879,7 @@ def vlevo(klavesa):
 def vpravo(klavesa):
     global x,y
 
-    if editace:
+    if editace or trenink:
         y = y + 1
         if y == 9:
             y = 0
@@ -705,7 +895,7 @@ def vpravo(klavesa):
 def nahoru(klavesa):
     global x,y
 
-    if editace:
+    if editace or trenink:
         x = x - 1
         if x == -1:
             x = 8
@@ -715,7 +905,7 @@ def nahoru(klavesa):
 def dolu(klavesa):
     global x,y
 
-    if editace:
+    if editace or trenink:
         x = x + 1
         if x == 9:
             x = 0
@@ -723,14 +913,10 @@ def dolu(klavesa):
         kurzor([x,y])
 
 def escape(klavesa):
-    global menuCesta
+    global menuCesta, trenink, zadaniSudoku, cislaVsudoku
 
     if menuCesta == []:
         konec()
-        return False
-
-    elif menuCesta == [1,0]:
-        vzdat()
         return False
 
     elif menuCesta == [0,0,0,0]:
@@ -745,6 +931,25 @@ def escape(klavesa):
     elif menuCesta == [0,1]:
         smazat_sudoku()
 
+    elif menuCesta == [1,2]:
+        smazat_sudoku()
+        vykreslit_sudoku(zadaniSudoku,"#000000")
+        cislaVsudoku = deepcopy(zadaniSudoku)
+
+    elif menuCesta == [1,1]:
+        if askyesno("Dotaz","Ukončit trénink?"):
+            trenink = False
+            smazat_sudoku()
+            vykreslit_sudoku(zadaniSudoku,"#000000")
+            cislaVsudoku = deepcopy(zadaniSudoku)
+            try:
+                C.delete(kur)
+            except:
+                pass
+        else:
+            return False
+
+
     del menuCesta[len(menuCesta)-1]
     prechod_v_menu(menuCesta)
 
@@ -758,7 +963,7 @@ def enter(klavesa):
 
     elif menuCesta == [0,0,0,0]:
         if hotovo():
-            menuCesta = [0,0]
+            menuCesta = []
             prechod_v_menu(menuCesta)
 
 
@@ -786,13 +991,20 @@ def key(klavesa):
     if editace and klavesa == " ":
         zapsatCislo("0")
 
+    if trenink and klavesa in ("1","2","3","4","5","6","7","8","9"):
+        doplnTrenink(klavesa)
+
+    if trenink and klavesa == " ":
+        doplnTrenink("0")
+
     if menuCesta == []:
         if klavesa == "z" or klavesa == "Z":
             menuCesta = [0]
             prechod_v_menu(menuCesta)
         elif klavesa == "r" or klavesa == "R":
-            menuCesta = [1]
-            prechod_v_menu(menuCesta)
+            if init_reseni():
+                menuCesta = [1]
+                prechod_v_menu(menuCesta)
         elif klavesa == "n" or klavesa == "N":
             menuCesta = [2]
             prechod_v_menu(menuCesta)
@@ -812,9 +1024,13 @@ def key(klavesa):
         if klavesa == "r" or klavesa == "R":
             menuCesta = [1,0]
             prechod_v_menu(menuCesta)
-        if klavesa == "t" or klavesa == "T":
-            menuCesta = [1,1]
-            prechod_v_menu(menuCesta)
+        elif klavesa == "t" or klavesa == "T":
+            if askyesno("Dotaz","Budete řešit sudoku s možností nechat si zkontrolovat doplněná čísla a nechat si poradit náhodné číslo v mřížce. Čas nebude zaznamenán. Chcete pokračovat?"):
+                menuCesta = [1,1]
+                prechod_v_menu(menuCesta)
+                treninkF()
+        elif klavesa == "v" or klavesa == "V":
+            vyresitPC()
 
     elif menuCesta == [2]:
         if klavesa == "u" or klavesa == "U":
@@ -841,15 +1057,24 @@ def key(klavesa):
 
     elif menuCesta == [1,0]:
         if klavesa == "r" or klavesa == "R":
-            print("resit")
+            if askyesno("Dotaz","Budete řešit sudoku na čas. Výsledek se poté zaznamená do databáze. Chcete pokračovat?"):
+                print("resit")
         elif klavesa == "v" or klavesa == "V":
             print("vysledky")
+
+    elif menuCesta == [1,1]:
+        if klavesa == "z" or klavesa == "Z":
+            zkontrolovat()
+        elif klavesa == "p" or klavesa == "P":
+            poradit()
 
 
 
 def klik(klavesa):
-    if editace:
+    if editace or trenink:
         klik = souradnice(klavesa)
+
+
 
         if klik != False:
             kurzor(klik)
@@ -863,15 +1088,174 @@ def bksp(klavesa):
         zapsatCislo("0")
         vlevo(0)
 
+    if trenink:
+        vlevo(0)
+        doplnTrenink("0")
+        vlevo(0)
+
 def delete(klavesa):
 
     if editace:
         zapsatCislo("0")
 
+    if trenink:
+        doplnTrenink("0")
+
     if menuCesta == [0,1,0]:
         if askyesno("Dotaz","Opravdu chcete toto sudoku vymazat z databáze?"):
             vymazat_z_databaze()
 
+def stringFormat(sudoku):
+    a = ""
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            a = a + str(sudoku[i][j])
+
+    return a
+
+
+
+def generate_candidates(template):
+    cand = [
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]],
+    [[],[],[],[],[],[],[],[],[]]
+    ]
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            if template[j][i] == 0:
+                cand[j][i] = [1,2,3,4,5,6,7,8,9]
+            else:
+                cand[j][i] = [template[j][i]]
+    return cand
+
+def pravidlova_zkouska(cand):
+    global menuCesta
+
+    for i in range(0,9,1):
+        removeRadek = []
+        removeSloupec = []
+        removeCtverec = []
+        dm = divmod(i,3)
+
+        for j in range(0,9,1):
+            if len(cand[i][j]) == 1:
+                removeRadek.append(cand[i][j][0])
+            if len(cand[j][i]) == 1:
+                removeSloupec.append(cand[j][i][0])
+
+            dm2 = divmod(j,3)
+            x = dm[1]*3+dm2[1]
+            y = dm[0]*3+dm2[0]
+            if len(cand[x][y]) == 1:
+                removeCtverec.append(cand[x][y][0])
+
+        for j in range(1,10,1):
+            if removeRadek.count(j) > 1 or removeCtverec.count(j) > 1 or removeSloupec.count(j) > 1:
+                if PrvniKontrola == False:
+                    return False
+                else:
+                    if zkontrolovani:
+                        return False
+
+                    if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
+                        db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
+                        db.commit()
+                        smazat_sudoku()
+                        menuCesta = []
+                        prechod_v_menu(menuCesta)
+                    return False
+
+
+        for j in range(0,9,1):
+            for kandidat in removeRadek:
+                if kandidat in cand[i][j] and len(cand[i][j]) > 1:
+                        cand[i][j].remove(kandidat)
+
+
+            for kandidat in removeSloupec:
+                if kandidat in cand[j][i] and len(cand[j][i]) > 1:
+                        cand[j][i].remove(kandidat)
+
+            dm2 = divmod(j,3)
+            x = dm[1]*3+dm2[1]
+            y = dm[0]*3+dm2[0]
+            for kandidat in removeCtverec:
+                if kandidat in cand[x][y] and len(cand[x][y]) > 1:
+                        cand[x][y].remove(kandidat)
+
+
+    return cand
+
+def najdi_uzel(cand):
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            if len(cand[i][j]) > 1:
+                return [i,j]
+    return False
+
+def kontrola(cand):
+    candBef = []
+    while not candBef == cand:
+        candBef = deepcopy(cand)
+        cand = pravidlova_zkouska(cand)
+        if cand == False:
+            return False
+    return cand
+
+def brute_force(cand):
+    hloubka = 0
+    cesta = []
+    mezipamet = []
+    mezipamet.append(deepcopy(cand))
+    cesta.append(0)
+    iterace = 0
+
+    while True:
+        iterace = iterace + 1
+
+        uzel = najdi_uzel(cand)
+
+        #print("")
+        #print("iterace: "+str(iterace))
+        #print("hloubka: "+str(hloubka))
+        #print("cesta: "+str(cesta))
+        #print("uzel: "+str(uzel))
+
+        if uzel == False:
+            #print("Hotovo!")
+            break
+
+        if cesta[hloubka] < len(cand[uzel[0]][uzel[1]]):
+            cand[uzel[0]][uzel[1]] = [cand[uzel[0]][uzel[1]][cesta[hloubka]]]
+        else:
+            hloubka = hloubka - 1
+            if hloubka == -1:
+                #print("Sudoku nema reseni!")
+                return False
+            cesta[hloubka] = cesta[hloubka] + 1
+            cand = deepcopy(mezipamet[hloubka])
+            del(cesta[hloubka+1])
+            del(mezipamet[hloubka+1])
+            #print("FAIL, vracim se zpatky a zkusim jine cislo.")
+            continue
+        cand = kontrola(cand)
+        if cand == False:
+            cand = deepcopy(mezipamet[hloubka])
+            cesta[hloubka] = cesta[hloubka] + 1
+            #print("FAIL, zkusim jine cislo.")
+        else:
+            hloubka = hloubka + 1
+            mezipamet.append(deepcopy(cand))
+            cesta.append(0)
+            #print("OK, jdu hloubeji.")
+    return cand
 
 
 

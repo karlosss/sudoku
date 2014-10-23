@@ -636,11 +636,26 @@ def treninkF():
     candidates = generate_candidates(cislaVsudoku)
     candidates = kontrola(candidates)
     if candidates == False:
+        if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
+            db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
+            db.commit()
+            smazat_sudoku()
+            menuCesta = []
+            prechod_v_menu(menuCesta)
         return False
 
     PrvniKontrola = False
     candidates = brute_force(candidates)
     PrvniKontrola = True
+
+    if candidates == False:
+        if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
+            db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
+            db.commit()
+            smazat_sudoku()
+            menuCesta = []
+            prechod_v_menu(menuCesta)
+        return False
 
     x = 0
     y = 0
@@ -721,6 +736,12 @@ def vyresitPC():
         candidates = generate_candidates(cislaVsudoku)
         candidates = kontrola(candidates)
         if candidates == False:
+            if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
+                db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
+                db.commit()
+                smazat_sudoku()
+                menuCesta = []
+                prechod_v_menu(menuCesta)
             return False
 
         PrvniKontrola = False
@@ -728,6 +749,12 @@ def vyresitPC():
         PrvniKontrola = True
 
         if candidates == False:
+            if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
+                db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
+                db.commit()
+                smazat_sudoku()
+                menuCesta = []
+                prechod_v_menu(menuCesta)
             return False
         else:
             for i in range(0,9,1):
@@ -1142,6 +1169,9 @@ def pravidlova_zkouska(cand):
         removeRadek = []
         removeSloupec = []
         removeCtverec = []
+        setKandidatuR = []
+        setKandidatuS = []
+        setKandidatuC = []
         dm = divmod(i,3)
 
         for j in range(0,9,1):
@@ -1156,21 +1186,25 @@ def pravidlova_zkouska(cand):
             if len(cand[x][y]) == 1:
                 removeCtverec.append(cand[x][y][0])
 
+            for k in range(1,10,1):
+                if k in cand[i][j] and k not in setKandidatuR:
+                    setKandidatuR.append(k)
+                if k in cand[j][i] and k not in setKandidatuS:
+                    setKandidatuS.append(k)
+                if k in cand[x][y] and k not in setKandidatuC:
+                    setKandidatuC.append(k)
+
+            setKandidatuC.sort()
+            setKandidatuS.sort()
+            setKandidatuR.sort()
+
+        if setKandidatuC != [1,2,3,4,5,6,7,8,9] or setKandidatuR != [1,2,3,4,5,6,7,8,9] or setKandidatuS != [1,2,3,4,5,6,7,8,9]:
+            if PrvniKontrola == False:
+                return False
+
         for j in range(1,10,1):
             if removeRadek.count(j) > 1 or removeCtverec.count(j) > 1 or removeSloupec.count(j) > 1:
-                if PrvniKontrola == False:
-                    return False
-                else:
-                    if zkontrolovani:
-                        return False
-
-                    if askyesno("Dotaz","Sudoku nemá řešení. Chcete jej odstranit z databáze?"):
-                        db.execute("delete from zadani where zadani='"+stringFormat(cislaVsudoku)+"'")
-                        db.commit()
-                        smazat_sudoku()
-                        menuCesta = []
-                        prechod_v_menu(menuCesta)
-                    return False
+                return False
 
 
         for j in range(0,9,1):

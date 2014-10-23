@@ -7,15 +7,26 @@ from copy import deepcopy
 start = time()
 
 raw = [
-[2,0,5,4,0,0,0,0,0],
-[0,0,8,0,6,1,0,0,0],
-[0,1,0,0,0,0,3,6,0],
-[1,0,0,7,0,0,4,0,8],
-[0,7,0,6,0,4,0,1,0],
-[8,0,4,0,0,9,0,0,6],
-[0,2,1,0,0,0,0,4,0],
-[0,0,0,1,5,0,6,0,0],
-[0,0,0,0,0,7,1,0,5]
+# [3,5,2,7,1,0,0,0,0],
+# [0,1,0,2,0,0,0,0,0],
+# [0,0,0,0,0,0,2,1,0],
+# [0,0,0,1,8,0,0,2,0],
+# [2,0,0,0,0,0,1,0,0],
+# [0,0,1,0,2,0,0,0,8],
+# [0,0,0,0,0,1,0,0,2],
+# [6,9,0,0,0,2,0,0,0],
+# [0,2,0,0,0,0,0,0,1]
+# ]
+
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0]
 ]
 
 
@@ -66,6 +77,9 @@ def pravidlova_zkouska(cand):
         removeRadek = []
         removeSloupec = []
         removeCtverec = []
+        setKandidatuR = []
+        setKandidatuS = []
+        setKandidatuC = []
         dm = divmod(i,3)
 
         for j in range(0,9,1):
@@ -79,6 +93,22 @@ def pravidlova_zkouska(cand):
             y = dm[0]*3+dm2[0]
             if len(cand[x][y]) == 1:
                 removeCtverec.append(cand[x][y][0])
+
+            for k in range(1,10,1):
+                if k in cand[i][j] and k not in setKandidatuR:
+                    setKandidatuR.append(k)
+                if k in cand[j][i] and k not in setKandidatuS:
+                    setKandidatuS.append(k)
+                if k in cand[x][y] and k not in setKandidatuC:
+                    setKandidatuC.append(k)
+
+            setKandidatuC.sort()
+            setKandidatuS.sort()
+            setKandidatuR.sort()
+
+        if setKandidatuC != [1,2,3,4,5,6,7,8,9] or setKandidatuR != [1,2,3,4,5,6,7,8,9] or setKandidatuS != [1,2,3,4,5,6,7,8,9]:
+            if PrvniKontrola == False:
+                return False
 
         for j in range(1,10,1):
             if removeRadek.count(j) > 1 or removeCtverec.count(j) > 1 or removeSloupec.count(j) > 1:
@@ -183,6 +213,18 @@ candidates = kontrola(candidates)
 PrvniKontrola = False
 candidates = brute_force(candidates)
 
+# print(kontrola([
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[4],[5],[6],[7],[8],[9],[1],[2],[3]],
+# [[7],[8],[9],[1],[2],[3],[4],[5],[6]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+# [[1],[2],[3],[4],[5],[6],[7],[8],[9]]
+# ]))
+
 print()
 print("Doba vypoctu "+str(1000*(time()-start))+" ms")
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -213,5 +255,5 @@ for i in range(0,10,1):
         C.create_rectangle(i*80+5,5,i*80+6,726, outline="#aaaaaa")
     else:
         C.create_rectangle(i*80+5,5,i*80+6,726)
-vykresli(candidates)
+#vykresli(candidates)
 okno.mainloop()

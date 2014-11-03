@@ -3,6 +3,10 @@ SuSol
 
 Changelog:
 
+dne 28. 10. vytvořen systém uživatelských jmen
+
+dne 21. 10. implementován tréninkový mód, ukládání do databáze
+
 dne 14. 10. do GUI lze zapisovat sudoku pomocí klávesnice, vymyšleno jméno: SUdokuSOLver = SuSol
 
 dne 9. 10. zahájena tvorba GUI, budoucnost webkamery zatím nejistá

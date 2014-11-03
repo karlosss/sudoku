@@ -18,7 +18,7 @@ raw = [
 # [0,2,0,0,0,0,0,0,1]
 # ]
 
-[0,0,0,0,0,0,0,0,0],
+[0,0,0,1,1,0,0,0,0],
 [0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0],
@@ -114,9 +114,6 @@ def pravidlova_zkouska(cand):
             if removeRadek.count(j) > 1 or removeCtverec.count(j) > 1 or removeSloupec.count(j) > 1:
                 if PrvniKontrola == False:
                     return False
-                else:
-                    print("sudoku nema reseni")
-                    exit()
 
 
         for j in range(0,9,1):

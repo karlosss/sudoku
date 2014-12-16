@@ -15,7 +15,7 @@ dne 7. 10. přidán changelog
 
 <br><br><br><br>
 
-![Image of Yaktocat](https://github.com/karlosss/sudoku/screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/karlosss/sudoku/master/screenshot.png)
 
 
 

@@ -62,6 +62,8 @@ cislaVsudokuOBJ = [
 [None,None,None,None,None,None,None,None,None]
 ]
 
+infoBox = [None,None,None,None,None,None,None,None]
+
 polozkyMenu = [None,None,None,None]
 menuCesta = []
 
@@ -505,26 +507,6 @@ def prechod_v_menu(kam):
         polozkyMenu[3].bind("<Enter>",najeti3)
         polozkyMenu[3].bind("<Leave>",sjeti3)
         polozkyMenu[3].bind("<Button 1>",klik3)
-
-    elif kam == [1,0]:
-        vytvorPath("Home - Řešení - Řešit na čas")
-        polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[0].create_text(100,25,text="Řešit (r)", font="Arial 20")
-        polozkyMenu[0].place(x=765,y=50)
-        polozkyMenu[0].bind("<Enter>",najeti0)
-        polozkyMenu[0].bind("<Leave>",sjeti0)
-        polozkyMenu[0].bind("<Button 1>",klik0)
-
-        polozkyMenu[1] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[1].create_text(100,25,text="Výsledky (v)", font="Arial 20")
-        polozkyMenu[1].place(x=765,y=120)
-        polozkyMenu[1].bind("<Enter>",najeti1)
-        polozkyMenu[1].bind("<Leave>",sjeti1)
-        polozkyMenu[1].bind("<Button 1>",klik1)
-
-        polozkyMenu[3] = Canvas(okno,width=200, height=50, bg="#ffffff")
-        polozkyMenu[3].create_text(100,25,text="Zpět (Esc)", font="Arial 20")
-        polozkyMenu[3].place(x=765,y=260)
 
     elif kam == [0,0,0,0]:
         vytvorPath("Home - Zadání - Nové - Klávesnice")
@@ -1193,8 +1175,8 @@ def key(klavesa):
 
     elif menuCesta == [1]:
         if klavesa == "r" or klavesa == "R":
-            menuCesta = [1,0]
-            prechod_v_menu(menuCesta)
+            if askyesno("Dotaz","Budete řešit sudoku na čas. Výsledek se poté zaznamená do databáze. Chcete pokračovat?"):
+                print("resit")
         elif klavesa == "t" or klavesa == "T":
             if askyesno("Dotaz","Budete řešit sudoku s možností nechat si zkontrolovat doplněná čísla a nechat si poradit náhodné číslo v mřížce. Čas nebude zaznamenán. Chcete pokračovat?"):
                 if stringFormat(cislaVsudoku) != "000000000000000000000000000000000000000000000000000000000000000000000000000000000":
@@ -1227,14 +1209,6 @@ def key(klavesa):
             menuCesta = [0,1,0,1]
             prechod_v_menu(menuCesta)
             editovat()
-
-
-    elif menuCesta == [1,0]:
-        if klavesa == "r" or klavesa == "R":
-            if askyesno("Dotaz","Budete řešit sudoku na čas. Výsledek se poté zaznamená do databáze. Chcete pokračovat?"):
-                print("resit")
-        elif klavesa == "v" or klavesa == "V":
-            print("vysledky")
 
     elif menuCesta == [1,1]:
         if klavesa == "z" or klavesa == "Z":
@@ -1493,7 +1467,7 @@ menu.place(x=822,y=10)
 log = Label(okno, text="LOG", font="Arial 20 bold")
 log.place(x=832,y=330)
 
-lgC = Canvas(okno, width=270, height=320, bg="#ffffff")
+lgC = Canvas(okno, width=270, height=320, bg="#eeeeee")
 lgC.place(x=730, y=370)
 
 lgC.create_text(0,0,anchor="nw",text="Nacházíte se v:",font="Arial 10")
@@ -1501,6 +1475,15 @@ path = lgC.create_text(0,20,anchor="nw",text="Home",font="Arial 14")
 
 uzivatel = lgC.create_text(0,70,anchor="nw",text="Uživatel (stiskněte enter pro změnu):",font="Arial 10")
 zobrazJmeno()
+
+infoBox[0] = Canvas(okno,width=270,height=65,bg="#ffffff")
+infoBox[0].place(x=730,y=500)
+
+infoBox[1] = Canvas(okno,width=270,height=65,bg="#eeeeee")
+infoBox[1].place(x=730,y=565)
+
+infoBox[2] = Canvas(okno,width=270,height=65,bg="#ffffff")
+infoBox[2].place(x=730,y=630)
 
 polozkyMenu[0] = Canvas(okno,width=200, height=50, bg="#ffffff")
 polozkyMenu[0].create_text(100,25,text="Zadání (z)", font="Arial 20")

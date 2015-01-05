@@ -130,35 +130,35 @@ def brute_force(cand, mode):
     while True:
         iterace = iterace + 1
         uzel = najdi_uzel(cand)
-        # print("")
-        # print("iterace: "+str(iterace))
-        # print("hloubka: "+str(hloubka))
-        # print("cesta: "+str(cesta))
-        # print("uzel: "+str(uzel))
+        print("")
+        print("iterace: "+str(iterace))
+        print("hloubka: "+str(hloubka))
+        print("cesta: "+str(cesta))
+        print("uzel: "+str(uzel))
         if cesta[hloubka] < len(cand[uzel[0]][uzel[1]]):
             cand[uzel[0]][uzel[1]] = [cand[uzel[0]][uzel[1]][cesta[hloubka]]]
         else:
             hloubka = hloubka - 1
             if hloubka == -1:
-                #print("Sudoku nema reseni!")
+                print("Sudoku nema reseni!")
                 break
             cesta[hloubka] = cesta[hloubka] + 1
             cand = deepcopy(mezipamet[hloubka])
             del(cesta[hloubka+1])
             del(mezipamet[hloubka+1])
-            #print("FAIL, vracim se zpatky a zkusim jine cislo.")
+            print("FAIL, vracim se zpatky a zkusim jine cislo.")
             continue
         cand = kontrola(cand)
         if cand == False:
             cand = deepcopy(mezipamet[hloubka])
             cesta[hloubka] = cesta[hloubka] + 1
-            #print("FAIL, zkusim jine cislo.")
+            print("FAIL, zkusim jine cislo.")
         else:
             uzel = najdi_uzel(cand)
             if uzel == False:
                 reseni.append(transform_solution(cand))
-                #print("reseni nalezeno!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                #print(cand) #nebo hotovo a break pro 1. reseni
+                print("reseni nalezeno!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print(cand) #nebo hotovo a break pro 1. reseni
                 cand = deepcopy(mezipamet[hloubka])
                 cesta[hloubka] = cesta[hloubka] + 1
                 if mode == len(reseni):
@@ -170,7 +170,7 @@ def brute_force(cand, mode):
             hloubka = hloubka + 1
             mezipamet.append(deepcopy(cand))
             cesta.append(0)
-            #print("OK, jdu hloubeji.")
+            print("OK, jdu hloubeji.")
     return reseni
 
 def transform_solution(cand):

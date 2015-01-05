@@ -1,26 +1,38 @@
+from __future__ import print_function
 import threading
-from time import sleep
+import generator
+from time import time
+import gtk
+import sys
 
-promenna = 0
+zadani = [[],[],[]]
+konec = False
+start=time()
 
-def a():
-    global promenna
-    for i in range(30):
-        sleep(0.3)
-        promenna = promenna + 1
-        print(promenna)
-
-def b():
-    global promenna
-    for j in range(10000,10030,1):
-        sleep(0.2)
-        promenna = promenna + 1
-        print(promenna)
+C = None
+cislo = None
 
 
+def generovani():
+    global zadani
+    while not konec:
+        l = generator.generate(bf=False,limit=40)
+        zadani[0].append(l)
+        s = generator.generate(bf=False,limit=0)
+        zadani[1].append(s)
+        t = generator.generate(bf=True,limit=0)
+        zadani[2].append(t)
+        while len(zadani[0]) > 50 and not konec:
+            pass
 
-t1 = threading.Thread(target=a)
-t2 = threading.Thread(target=b)
+def gui():
+    pass
+
+
+
+
+t1 = threading.Thread(target=generovani)
+t2 = threading.Thread(target=gui)
 
 t1.start()
 t2.start()
@@ -28,7 +40,7 @@ t2.start()
 t1.join()
 t2.join()
 
-print("")
-print()
-print(promenna)
+
+print("konec")
+print(time()-start)
 

@@ -31,7 +31,8 @@ def vyplnena_policka(sudoku):
     return pozice
 
 
-def odeber_cisla(sudoku, bf=False, limit=0):
+def odeber_cisla(sudoku, bf=False, limit=0, singlesol=True):
+    sudoku = deepcopy(sudoku)
 
     nejdeOdebrat = False
     pocetOdebranych = 0
@@ -58,6 +59,13 @@ def odeber_cisla(sudoku, bf=False, limit=0):
 
             predchoziHodnota = sudoku[policko[0]][policko[1]]
             sudoku[policko[0]][policko[1]] = 0
+
+            if not singlesol:
+                pocetOdebranych = pocetOdebranych + 1
+                if 81 - pocetOdebranych == limit:
+                    return sudoku
+                else:
+                    break
 
             if bf:
                 reseni = solver.solve(sudoku, mode=2)
@@ -86,28 +94,7 @@ def odeber_cisla(sudoku, bf=False, limit=0):
 
     return sudoku
 
-lehke = []
-stredneTezke = []
-obtizne = []
-
-zadani = vytvor_mrizku()
-
-for i in range(300):
-    lehkeApp = odeber_cisla(deepcopy(zadani), bf=False, limit=40)
-    lehke.append(lehkeApp)
-    stredneTezkeApp = odeber_cisla(deepcopy(zadani), bf=False, limit=0)
-    stredneTezke.append(lehkeApp)
-    obtizneApp = odeber_cisla(deepcopy(zadani), bf=True, limit=0)
-    obtizne.append(lehkeApp)
-
-print("hotovo")
-# for i in lehke:
-#     print()
-#     print()
-#     for j in i:
-#         print(j)
-
-
-
-
-
+def generate(singlesol=True, bf=False, limit=0):
+    sudoku = vytvor_mrizku()
+    sudoku = odeber_cisla(sudoku,bf=bf,limit=limit,singlesol=singlesol)
+    return sudoku

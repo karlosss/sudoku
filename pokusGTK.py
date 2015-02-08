@@ -236,7 +236,7 @@ class PyApp(gtk.Window):
             self.entryNumberFilled.set_alignment(xalign=0.5)
             self.entryKandidati.set_sensitive(True)
 
-        self.expose(None,None)
+        self.vykresli()
 
     def zapisCislo(self,cislo):
         global USER_RESENI, USER_KANDIDATI
@@ -265,16 +265,16 @@ class PyApp(gtk.Window):
     def klavesa(self,x,y):
         if y.keyval == 65361: #sipky
             self.sudokuX = (self.sudokuX-1)%9
-            #self.vykresli()
+            self.vykresli()
         elif y.keyval == 65362:
             self.sudokuY = (self.sudokuY-1)%9
-            #self.vykresli()
+            self.vykresli()
         elif y.keyval == 65363:
             self.sudokuX = (self.sudokuX+1)%9
-            #self.vykresli()
+            self.vykresli()
         elif y.keyval == 65364:
             self.sudokuY = (self.sudokuY+1)%9
-            #self.vykresli()
+            self.vykresli()
 
         elif y.keyval == 49: #cisla 1-9 a delete
             self.zapisCislo(1)
@@ -321,7 +321,7 @@ class PyApp(gtk.Window):
                 self.skipEnter = True
 
 
-        print(y.keyval)
+        print(self.sudokuY,self.sudokuX)
 
         if ZADANI[self.sudokuY][self.sudokuX]+USER_RESENI[self.sudokuY][self.sudokuX] != 0:
             self.entryNumberFilled.set_text(str(ZADANI[self.sudokuY][self.sudokuX]+USER_RESENI[self.sudokuY][self.sudokuX]))
@@ -516,7 +516,7 @@ class PyApp(gtk.Window):
         self.event2 = self.darea.connect("button_press_event", self.klik)
         self.event3 = self.connect("key_press_event",self.klavesa)
         self.darea.set_events(gtk.gdk.BUTTON_PRESS_MASK)
-        gobject.timeout_add(100,self.vykresli)
+        # gobject.timeout_add(100,self.vykresli)
 
 
         self.reseniSudoku = gtk.Fixed()

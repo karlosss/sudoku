@@ -88,10 +88,10 @@ def odeber_cisla(sudoku, bf=False, limit=0, singlesol=True):
 
                 if rand == initRand:
                     #print("limit nedosazen")
-                    #print(81-pocetOdebranych)
                     nejdeOdebrat = True
                     break
 
+    print(81-pocetOdebranych)
     return sudoku
 
 def generate(singlesol=True, bf=False, limit=0):

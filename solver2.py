@@ -224,15 +224,22 @@ def najdiPolickoProTest(kandidati):
     except ValueError: #kdyz neexistuje, tak vrat treba -1,-1, na to uz se nikdo ptat nebude
         return [-1,-1]
 
-def bruteForce(reseni):
+def bruteForce(reseni,pocetReseni):
+    toReturn = []
     hloubka = 0
     cesta = [0]
     mezipamet = [deepcopy(reseni)]
 
-    while not sudokuVyreseno(reseni):
+    while True:
         kandidati = inicializovatKandidaty(reseni)
         kandidati = generujKandidaty(kandidati,reseni)
         policko = najdiPolickoProTest(kandidati)
+
+        if sudokuVyreseno(reseni):
+            toReturn.append(reseni)
+            if len(toReturn) == pocetReseni:
+                print("ukonceno predcasne")
+                return toReturn
 
         while cesta[hloubka] > len(kandidati[policko[0]][policko[1]])-1: #CHYBA, snizuju hloubku
             del(mezipamet[hloubka])
@@ -240,8 +247,7 @@ def bruteForce(reseni):
             hloubka = hloubka - 1
 
             if hloubka == -1:
-                print("sudoku nema reseni")
-                return False
+                return toReturn
 
             reseni = mezipamet[hloubka]
             cesta[hloubka] = cesta[hloubka] + 1
@@ -286,9 +292,14 @@ def bruteForce(reseni):
             cesta[hloubka] = cesta[hloubka] + 1
             continue
 
-    return reseni
+    return toReturn
 
-def solvePC(zad):
+
+
+
+
+
+def solvePC(zad,pocetReseni=1):
     #################POVINNA HLAVICKA######################
     zadani = deepcopy(zad)
     reseni = deepcopy(zadani)
@@ -322,12 +333,9 @@ def solvePC(zad):
         return False
 
     if not sudokuVyreseno(reseni):
-        reseni = bruteForce(reseni)
+        reseni = bruteForce(reseni,pocetReseni)
 
-    if reseni == False:
-        return False
-    else:
-        return reseni
+    return reseni
 
 def solveHuman(zad):
     #################POVINNA HLAVICKA######################

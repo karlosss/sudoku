@@ -1245,6 +1245,8 @@ class SuSol(QtGui.QMainWindow):
 
     def mainNumberChosen(self,cislo):
         self.reseni[self.curY][self.curX] = cislo
+        self.upravitWidgety()
+        self.update()
 
     def candChange1(self):
         if self.cand1.isChecked() and 1 not in self.kandidati[self.curY][self.curX]:
@@ -1412,10 +1414,10 @@ class SuSol(QtGui.QMainWindow):
         temp = deepcopy(self.doplneno)
         temp = solver2.solvePC(temp)
         print(temp)
-        if temp == False:
+        if len(temp) == 0:
             QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby. Nejdříve je opravte.")
         else:
-            self.doplneno = deepcopy(temp)
+            self.doplneno = deepcopy(temp[0])
             for i in range(0,9,1):
                 for j in range(0,9,1):
                     self.reseni[i][j] = self.doplneno[i][j]-self.zadani[i][j]
@@ -2046,8 +2048,6 @@ class SuSol(QtGui.QMainWindow):
         self.tabs.addTab(self.tab1,"Řešení")
         self.tabs.addTab(self.tab2,"Pomoc počítače")
         self.tabs.show()
-
-
 
         self.show()
         self.upravitWidgety()

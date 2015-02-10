@@ -1,3 +1,6 @@
+#encoding: utf8
+from __future__ import unicode_literals
+
 def sameChars(string):
     pole = []
     for i in string:
@@ -58,7 +61,30 @@ def alpha2num(char):
         return 6
     if char.lower() == "h":
         return 7
-    if char.lower() == "a":
+    if char.lower() == "i":
         return 8
     return -1
+
+def hms(integer):
+
+    h = divmod(integer,3600)
+    zbytek = h[1]
+    h = h[0]
+    m = divmod(zbytek,60)
+    s = m[1]
+    m = m[0]
+
+    h = str(h)
+    if m < 10:
+        m = "0"+str(m)
+    else:
+        m = str(m)
+
+    if s < 10:
+        s = "0"+str(s)
+    else:
+        s = str(s)
+
+
+    return "Čas: "+h+":"+m+":"+s
 

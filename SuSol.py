@@ -1,7 +1,9 @@
 #coding: utf8
 from __future__ import print_function, unicode_literals
 from PyQt4 import QtGui, QtCore
-from misc import num2alpha, arr2str, alpha2num
+from misc import num2alpha, arr2str, alpha2num, hms
+from copy import deepcopy
+from time import time
 import sys
 import solver2
 
@@ -280,8 +282,6 @@ class RemoveColorDialog(QtGui.QDialog):
         okno.upravitWidgety()
         okno.update()
 
-        info = QtGui.QMessageBox.information(None,"Info","Provedeno bez chyb.")
-
     def provest2(self):
         if self.color1.isChecked():
             click = 0
@@ -308,8 +308,6 @@ class RemoveColorDialog(QtGui.QDialog):
 
         okno.upravitWidgety()
         okno.update()
-
-        info = QtGui.QMessageBox.information(None,"Info","Provedeno bez chyb.")
 
 
     def __init__(self):
@@ -339,49 +337,49 @@ class RemoveColorDialog(QtGui.QDialog):
         btn2.clicked.connect(self.provest2)
 
         self.color1 = QtGui.QPushButton()
-        self.color1.setStyleSheet("background-color: "+okno.barvyBarev[0]+"; color: #ffffff")
+        self.color1.setStyleSheet("background-color: "+okno.barvyBarev[0]+"; color: #000000")
         self.color1.setMaximumWidth(20)
         self.color1.setCheckable(True)
         self.color1.setChecked(True)
         self.color1.setText("x")
         self.color1.clicked.connect(self.click1)
         self.color2 = QtGui.QPushButton()
-        self.color2.setStyleSheet("background-color: "+okno.barvyBarev[1]+"; color: #ffffff")
+        self.color2.setStyleSheet("background-color: "+okno.barvyBarev[1]+"; color: #000000")
         self.color2.setMaximumWidth(20)
         self.color2.setCheckable(True)
         self.color2.clicked.connect(self.click2)
         self.color3 = QtGui.QPushButton()
-        self.color3.setStyleSheet("background-color: "+okno.barvyBarev[2]+"; color: #ffffff")
+        self.color3.setStyleSheet("background-color: "+okno.barvyBarev[2]+"; color: #000000")
         self.color3.setMaximumWidth(20)
         self.color3.setCheckable(True)
         self.color3.clicked.connect(self.click3)
         self.color4 = QtGui.QPushButton()
-        self.color4.setStyleSheet("background-color: "+okno.barvyBarev[3]+"; color: #ffffff")
+        self.color4.setStyleSheet("background-color: "+okno.barvyBarev[3]+"; color: #000000")
         self.color4.setMaximumWidth(20)
         self.color4.setCheckable(True)
         self.color4.clicked.connect(self.click4)
         self.color5 = QtGui.QPushButton()
-        self.color5.setStyleSheet("background-color: "+okno.barvyBarev[4]+"; color: #ffffff")
+        self.color5.setStyleSheet("background-color: "+okno.barvyBarev[4]+"; color: #000000")
         self.color5.setMaximumWidth(20)
         self.color5.setCheckable(True)
         self.color5.clicked.connect(self.click5)
         self.color6 = QtGui.QPushButton()
-        self.color6.setStyleSheet("background-color: "+okno.barvyBarev[5]+"; color: #ffffff")
+        self.color6.setStyleSheet("background-color: "+okno.barvyBarev[5]+"; color: #000000")
         self.color6.setMaximumWidth(20)
         self.color6.setCheckable(True)
         self.color6.clicked.connect(self.click6)
         self.color7 = QtGui.QPushButton()
-        self.color7.setStyleSheet("background-color: "+okno.barvyBarev[6]+"; color: #ffffff")
+        self.color7.setStyleSheet("background-color: "+okno.barvyBarev[6]+"; color: #000000")
         self.color7.setMaximumWidth(20)
         self.color7.setCheckable(True)
         self.color7.clicked.connect(self.click7)
         self.color8 = QtGui.QPushButton()
-        self.color8.setStyleSheet("background-color: "+okno.barvyBarev[7]+"; color: #ffffff")
+        self.color8.setStyleSheet("background-color: "+okno.barvyBarev[7]+"; color: #000000")
         self.color8.setMaximumWidth(20)
         self.color8.setCheckable(True)
         self.color8.clicked.connect(self.click8)
         self.color9 = QtGui.QPushButton()
-        self.color9.setStyleSheet("background-color: "+okno.barvyBarev[8]+"; color: #ffffff")
+        self.color9.setStyleSheet("background-color: "+okno.barvyBarev[8]+"; color: #000000")
         self.color9.setMaximumWidth(20)
         self.color9.setCheckable(True)
         self.color9.clicked.connect(self.click9)
@@ -406,13 +404,262 @@ class RemoveColorDialog(QtGui.QDialog):
 
 class ColorSettingsDialog(QtGui.QDialog):
 
+    def click1(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[0] = barva
+            self.but1.setStyleSheet("background-color: "+self.tempColors[0])
+            self.update()
+
+    def click2(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[1] = barva
+            self.but2.setStyleSheet("background-color: "+self.tempColors[1])
+            self.update()
+
+    def click3(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[2] = barva
+            self.but3.setStyleSheet("background-color: "+self.tempColors[2])
+            self.update()
+
+    def click4(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[3] = barva
+            self.but4.setStyleSheet("background-color: "+self.tempColors[3])
+            self.update()
+
+    def click5(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[4] = barva
+            self.but5.setStyleSheet("background-color: "+self.tempColors[4])
+            self.update()
+
+    def click6(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[5] = barva
+            self.but6.setStyleSheet("background-color: "+self.tempColors[5])
+            self.update()
+
+    def click7(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[6] = barva
+            self.but7.setStyleSheet("background-color: "+self.tempColors[6])
+            self.update()
+
+    def click8(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[7] = barva
+            self.but8.setStyleSheet("background-color: "+self.tempColors[7])
+            self.update()
+
+    def click9(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempColors[8] = barva
+            self.but9.setStyleSheet("background-color: "+self.tempColors[8])
+            self.update()
+
+    def click10(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempCursor = barva
+            self.but10.setStyleSheet("background-color: "+self.tempCursor)
+            self.update()
+
+    def click11(self):
+        self.tempColors = ["#8888ff","#88ff88","#ff8888","#ffff88","#ff88ff","#88ffff","#880088","#888800","#008888"]
+        self.tempCursor = "#ffbbbb"
+        self.but10.setStyleSheet("background-color: "+self.tempCursor)
+        self.but1.setStyleSheet("background-color: "+self.tempColors[0])
+        self.but2.setStyleSheet("background-color: "+self.tempColors[1])
+        self.but3.setStyleSheet("background-color: "+self.tempColors[2])
+        self.but4.setStyleSheet("background-color: "+self.tempColors[3])
+        self.but5.setStyleSheet("background-color: "+self.tempColors[4])
+        self.but6.setStyleSheet("background-color: "+self.tempColors[5])
+        self.but7.setStyleSheet("background-color: "+self.tempColors[6])
+        self.but8.setStyleSheet("background-color: "+self.tempColors[7])
+        self.but9.setStyleSheet("background-color: "+self.tempColors[8])
+        self.update()
+
+
+    def toggle(self):
+        if self.cbox.isChecked():
+            self.tempAutoColor = True
+        else:
+            self.tempAutoColor = False
+
+    def acceptDialog(self):
+        okno.barvyBarev = deepcopy(self.tempColors)
+        okno.barvaKurzoru = self.tempCursor
+        okno.autoColor = self.tempAutoColor
+        okno.upravitWidgety()
+        self.close()
+
     def __init__(self):
         super(ColorSettingsDialog, self).__init__()
 
+        self.tempColors = deepcopy(okno.barvyBarev)
+        self.tempCursor = okno.barvaKurzoru
+
+        self.setWindowTitle("Nastavení barev")
+        self.resize(300,100)
+
+        self.cbox = QtGui.QCheckBox()
+        self.cbox.setText("Automaticky zabarvovat dle kandidátů")
+        self.cbox.toggled.connect(self.toggle)
+        self.cbox.setChecked(okno.autoColor)
+        self.tempAutoColor = self.cbox.isChecked()
+
+        self.but1 = QtGui.QPushButton()
+        self.but1.setStyleSheet("color: #000000; background-color: "+self.tempColors[0])
+        self.but1.setText("Změnit barvu 1")
+        self.but1.clicked.connect(self.click1)
+        self.but2 = QtGui.QPushButton()
+        self.but2.setStyleSheet("color: #000000; background-color: "+self.tempColors[1])
+        self.but2.setText("Změnit barvu 2")
+        self.but2.clicked.connect(self.click2)
+        self.but3 = QtGui.QPushButton()
+        self.but3.setStyleSheet("color: #000000; background-color: "+self.tempColors[2])
+        self.but3.setText("Změnit barvu 3")
+        self.but3.clicked.connect(self.click3)
+        self.but4 = QtGui.QPushButton()
+        self.but4.setStyleSheet("color: #000000; background-color: "+self.tempColors[3])
+        self.but4.setText("Změnit barvu 4")
+        self.but4.clicked.connect(self.click4)
+        self.but5 = QtGui.QPushButton()
+        self.but5.setStyleSheet("color: #000000; background-color: "+self.tempColors[4])
+        self.but5.setText("Změnit barvu 5")
+        self.but5.clicked.connect(self.click5)
+        self.but6 = QtGui.QPushButton()
+        self.but6.setStyleSheet("color: #000000; background-color: "+self.tempColors[5])
+        self.but6.setText("Změnit barvu 6")
+        self.but6.clicked.connect(self.click6)
+        self.but7 = QtGui.QPushButton()
+        self.but7.setStyleSheet("color: #000000; background-color: "+self.tempColors[6])
+        self.but7.setText("Změnit barvu 7")
+        self.but7.clicked.connect(self.click7)
+        self.but8 = QtGui.QPushButton()
+        self.but8.setStyleSheet("color: #000000; background-color: "+self.tempColors[7])
+        self.but8.setText("Změnit barvu 8")
+        self.but8.clicked.connect(self.click8)
+        self.but9 = QtGui.QPushButton()
+        self.but9.setStyleSheet("color: #000000; background-color: "+self.tempColors[8])
+        self.but9.setText("Změnit barvu 9")
+        self.but9.clicked.connect(self.click9)
+        self.but10 = QtGui.QPushButton()
+        self.but10.setStyleSheet("color: #000000; background-color: "+self.tempCursor)
+        self.but10.setText("Změnit barvu kurzoru")
+        self.but10.clicked.connect(self.click10)
+        self.but11 = QtGui.QPushButton()
+        self.but11.setText("Obnovit výchozí")
+        self.but11.clicked.connect(self.click11)
+
+        line = QtGui.QFrame()
+        line.setFrameShape(QtGui.QFrame.HLine)
+        line.setFrameShadow(QtGui.QFrame.Sunken)
+
+        line2 = QtGui.QFrame()
+        line2.setFrameShape(QtGui.QFrame.HLine)
+        line2.setFrameShadow(QtGui.QFrame.Sunken)
+
+        line3 = QtGui.QFrame()
+        line3.setFrameShape(QtGui.QFrame.HLine)
+        line3.setFrameShadow(QtGui.QFrame.Sunken)
+
+        line4 = QtGui.QFrame()
+        line4.setFrameShape(QtGui.QFrame.HLine)
+        line4.setFrameShadow(QtGui.QFrame.Sunken)
+
+        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel)
+        buttons.rejected.connect(self.close)
+        buttons.accepted.connect(self.acceptDialog)
 
 
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(self.cbox)
+        layout.addWidget(line)
+        layout.addWidget(self.but1)
+        layout.addWidget(self.but2)
+        layout.addWidget(self.but3)
+        layout.addWidget(self.but4)
+        layout.addWidget(self.but5)
+        layout.addWidget(self.but6)
+        layout.addWidget(self.but7)
+        layout.addWidget(self.but8)
+        layout.addWidget(self.but9)
+        layout.addWidget(line2)
+        layout.addWidget(self.but10)
+        layout.addWidget(line3)
+        layout.addWidget(self.but11)
+        layout.addWidget(line4)
+        layout.addWidget(buttons)
+
+class TimeSetDialog(QtGui.QDialog):
+
+    def acceptDialog(self):
+        okno.time = 3600*self.hodiny.value()+60*self.minuty.value()+self.sekundy.value()
+        okno.timeBackup = 3600*self.hodiny.value()+60*self.minuty.value()+self.sekundy.value()
+        okno.cas.setText(hms(okno.time))
+        okno.upravitWidgety()
+        okno.update()
+        self.close()
+
+    def __init__(self):
+        super(TimeSetDialog,self).__init__()
+
+        self.setWindowTitle("Nastavit čas")
+        self.resize(300,150)
+
+        self.hodiny = QtGui.QSpinBox()
+        self.minuty = QtGui.QSpinBox()
+        self.minuty.setRange(0,59)
+        self.sekundy = QtGui.QSpinBox()
+        self.sekundy.setRange(0,59)
 
 
+        h = okno.time // 3600
+        m = (okno.time-h*3600) // 60
+        s = okno.time-h*3600-m*60
+
+        self.hodiny.setValue(h)
+        self.minuty.setValue(m)
+        self.sekundy.setValue(s)
+
+        cas = QtGui.QLabel("Čas:")
+        d1 = QtGui.QLabel("  :  ")
+        d2 = QtGui.QLabel("  :  ")
+
+        layout = QtGui.QGridLayout(self)
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel)
+
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.close)
+
+        layout.addWidget(cas,0,0)
+        layout.addWidget(self.hodiny,0,1)
+        layout.addWidget(d1,0,2)
+        layout.addWidget(self.minuty,0,3)
+        layout.addWidget(d2,0,4)
+        layout.addWidget(self.sekundy,0,5)
+        layout.addWidget(tlacitka,1,3,1,6)
 
 class SuSol(QtGui.QMainWindow):
 
@@ -437,8 +684,8 @@ class SuSol(QtGui.QMainWindow):
         hranice = Xpos-margin+9*squareSize+2*margin+menuMargin
 
         self.tabs.move(hranice,Ypos+margin)
-        if self.frameGeometry().height()-40-Ypos-margin > 480:
-            a = 480
+        if self.frameGeometry().height()-40-Ypos-margin > 520:
+            a = 520
         else:
             a = self.frameGeometry().height()-40-Ypos-margin
 
@@ -483,14 +730,14 @@ class SuSol(QtGui.QMainWindow):
                     painter.drawRect(i*squareSize+Xpos+k*sirka,j*squareSize+Ypos,sirka+addOn,squareSize)
 
                 if self.curX == i and self.curY == j and self.candMode == False:
-                    painter.setBrush(QtGui.QColor("#ffbbbb"))
+                    painter.setBrush(QtGui.QColor(self.barvaKurzoru))
                     painter.drawRect(i*squareSize+Xpos,(j+1)*squareSize+Ypos,squareSize,-squareSize*0.7)
 
 
 
 
         if self.candMode: #kurzor na kandidaty
-            painter.setBrush(QtGui.QColor("#ffbbbb"))
+            painter.setBrush(QtGui.QColor(self.barvaKurzoru))
             painter.drawRect(self.curX*squareSize+Xpos,self.curY*squareSize+Ypos,squareSize,squareSize*0.35)
             painter.setBrush(QtGui.QColor("#ffffff"))
 
@@ -661,6 +908,9 @@ class SuSol(QtGui.QMainWindow):
                         self.doplnCislo(0)
                     else:
                         self.smazKandidaty()
+                elif key == QtCore.Qt.Key_Space:
+                    self.startstop()
+
 
             self.curX = divmod(self.curX,9)[1]
             self.curY = divmod(self.curY,9)[1]
@@ -668,6 +918,38 @@ class SuSol(QtGui.QMainWindow):
             self.poleLabel.setText(string[self.curY]+str(self.curX+1))
             self.upravitWidgety()
             self.update()
+
+
+    def startstop(self):
+        if not self.casBezi:
+            self.casBezi = True
+            self.casStartStop.setStyleSheet("background-color: #008800; color: #ffffff")
+            self.timestamp = time()
+            self.a2.setEnabled(False)
+            self.a3.setEnabled(False)
+            self.timer.start(1000)
+        else:
+            self.casBezi = False
+            self.casStartStop.setStyleSheet("background-color: #ff0000; color: #ffffff")
+            self.timer.stop()
+            self.timeBackup = self.time
+            self.a2.setEnabled(True)
+            self.a3.setEnabled(True)
+
+    def pricitat_cas(self):
+        self.time = int(time())-int(self.timestamp)+self.timeBackup
+        self.cas.setText(hms(self.time))
+        return self.casBezi
+
+    def vynulovat(self):
+        self.time = 0
+        self.timeBackup = 0
+        self.cas.setText("Čas: 0:00:00")
+        self.update()
+
+    def nastavitCas(self):
+        dialog = TimeSetDialog()
+        dialog.exec_()
 
 
 
@@ -684,16 +966,23 @@ class SuSol(QtGui.QMainWindow):
             else:
                 if cislo in self.kandidati[self.curY][self.curX]:
                     self.kandidati[self.curY][self.curX].remove(cislo)
+                    if self.autoColor:
+                        self.barvy[self.curY][self.curX][cislo-1] = 0
+                        print(self.barvy)
                 else:
                     self.kandidati[self.curY][self.curX].append(cislo)
                     self.kandidati[self.curY][self.curX].sort()
+                    if self.autoColor:
+                        self.barvy[self.curY][self.curX][cislo-1] = 1
+            self.upravitWidgety()
+            self.update()
 
     def smazKandidaty(self):
         self.kandidati[self.curY][self.curX]= []
-        self.update()
+        if self.autoColor:
+            self.barvy[self.curY][self.curX] = [0,0,0,0,0,0,0,0,0]
 
-    def tabsReseni(self):
-        pass
+        self.update()
 
     def quit(self):
         self.close()
@@ -842,6 +1131,7 @@ class SuSol(QtGui.QMainWindow):
             for j in range(0,9,1):
                 self.doplneno[i][j] = self.zadani[i][j]+self.reseni[i][j]
 
+
         self.mainNumber.setCurrentIndex(self.zadani[self.curY][self.curX]+self.reseni[self.curY][self.curX])
         if self.zadani[self.curY][self.curX] != 0:
             self.mainNumber.setDisabled(True)
@@ -943,6 +1233,16 @@ class SuSol(QtGui.QMainWindow):
             self.color9.setChecked(False)
             self.color9.setText("")
 
+        self.color1.setStyleSheet("background-color: "+self.barvyBarev[0])
+        self.color2.setStyleSheet("background-color: "+self.barvyBarev[1])
+        self.color3.setStyleSheet("background-color: "+self.barvyBarev[2])
+        self.color4.setStyleSheet("background-color: "+self.barvyBarev[3])
+        self.color5.setStyleSheet("background-color: "+self.barvyBarev[4])
+        self.color6.setStyleSheet("background-color: "+self.barvyBarev[5])
+        self.color7.setStyleSheet("background-color: "+self.barvyBarev[6])
+        self.color8.setStyleSheet("background-color: "+self.barvyBarev[7])
+        self.color9.setStyleSheet("background-color: "+self.barvyBarev[8])
+
     def mainNumberChosen(self,cislo):
         self.reseni[self.curY][self.curX] = cislo
 
@@ -950,64 +1250,128 @@ class SuSol(QtGui.QMainWindow):
         if self.cand1.isChecked() and 1 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(1)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][0] = 1
         if not self.cand1.isChecked() and 1 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(1)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][0] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange2(self):
         if self.cand2.isChecked() and 2 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(2)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][1] = 1
         if not self.cand2.isChecked() and 2 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(2)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][1] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange3(self):
         if self.cand3.isChecked() and 3 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(3)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][2] = 1
         if not self.cand3.isChecked() and 3 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(3)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][2] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange4(self):
         if self.cand4.isChecked() and 4 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(4)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][3] = 1
         if not self.cand4.isChecked() and 4 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(4)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][3] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange5(self):
         if self.cand5.isChecked() and 5 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(5)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][4] = 1
         if not self.cand5.isChecked() and 5 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(5)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][4] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange6(self):
         if self.cand6.isChecked() and 6 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(6)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][5] = 1
         if not self.cand6.isChecked() and 6 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(6)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][5] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange7(self):
         if self.cand7.isChecked() and 7 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(7)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][6] = 1
         if not self.cand7.isChecked() and 7 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(7)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][6] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange8(self):
         if self.cand8.isChecked() and 8 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(8)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][7] = 1
+
         if not self.cand8.isChecked() and 8 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(8)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][7] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def candChange9(self):
         if self.cand9.isChecked() and 9 not in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].append(9)
             self.kandidati[self.curY][self.curX].sort()
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][8] = 1
         if not self.cand9.isChecked() and 9 in self.kandidati[self.curY][self.curX]:
             self.kandidati[self.curY][self.curX].remove(9)
+            if self.autoColor:
+                self.barvy[self.curY][self.curX][8] = 0
+
+        self.upravitWidgety()
+        self.update()
 
     def obnovit(self):
         self.setFocus()
@@ -1039,8 +1403,72 @@ class SuSol(QtGui.QMainWindow):
     def vygenerovatKandidaty(self):
         self.kandidati = solver2.inicializovatKandidaty(self.doplneno)
         self.kandidati = solver2.generujKandidaty(self.kandidati,self.doplneno)
+        if self.autoColor:
+            self.zabarvitDleKandidatuClick()
         self.upravitWidgety()
         self.update()
+
+    def vyresit(self):
+        temp = deepcopy(self.doplneno)
+        temp = solver2.solvePC(temp)
+        print(temp)
+        if temp == False:
+            QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby. Nejdříve je opravte.")
+        else:
+            self.doplneno = deepcopy(temp)
+            for i in range(0,9,1):
+                for j in range(0,9,1):
+                    self.reseni[i][j] = self.doplneno[i][j]-self.zadani[i][j]
+                    if self.reseni[i][j] < 0:
+                        self.reseni[i][j] = 0
+
+            self.akronymy = [
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""]]
+
+            self.poznamky = [
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""]]
+
+            self.barvy = [
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]]
+
+            self.kandidati = [
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]]]
+
+            self.upravitWidgety()
+            self.update()
+            QtGui.QMessageBox.information(None,"Info","Vyřešeno bez chyb.")
 
     def odstranitBarvuClick(self):
         dialog = RemoveColorDialog()
@@ -1050,12 +1478,121 @@ class SuSol(QtGui.QMainWindow):
         dialog = ColorSettingsDialog()
         dialog.exec_()
 
+    def zabarvitDleKandidatuClick(self):
+        for i in range(0,9,1):
+            for j in range(0,9,1):
+                for k in range(0,9,1):
+                    if k+1 in self.kandidati[i][j]:
+                        self.barvy[i][j][k] = 1
+                    else:
+                        self.barvy[i][j][k] = 0
+
+        self.upravitWidgety()
+        self.update()
+
+    def restartovatClick(self):
+
+        otazka = QtGui.QMessageBox.question(None,"Dotaz","Opravdu chcete sudoku restartovat? Všechny neuložené změny budou ztraceny!",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+        if otazka == QtGui.QMessageBox.Ok:
+
+            if self.casBezi:
+                self.startstop()
+            self.time = 0
+            self.timeBackup = 0
+            self.cas.setText("Čas: 0:00:00")
+
+
+            self.zadani = [
+                [0,0,5,3,0,0,0,0,0],
+                [8,0,0,0,0,0,0,2,0],
+                [0,7,0,0,1,0,5,0,0],
+                [4,0,0,0,0,5,3,0,0],
+                [0,1,0,0,7,0,0,0,6],
+                [0,0,3,2,0,0,0,8,0],
+                [0,6,0,5,0,0,0,0,9],
+                [0,0,4,0,0,0,0,3,0],
+                [0,0,0,0,0,9,7,0,0]
+                ]
+
+            self.reseni = [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]]
+
+            self.doplneno = [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ]
+
+            self.akronymy = [
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""]]
+
+            self.poznamky = [
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""],
+                ["","","","","","","","",""]]
+
+            self.barvy = [
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]]
+
+
+            self.zobrazitBarvu = [1,1,1,1,1,1,1,1,1]
+
+            self.kandidati = [
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]],
+                [[],[],[],[],[],[],[],[],[]]]
+
+            self.upravitWidgety()
+            self.update()
+
     def __init__(self):
         super(SuSol, self).__init__()
 
         #############CONFIG#######################################################
         self.barvyBarev = ["#8888ff","#88ff88","#ff8888","#ffff88","#ff88ff","#88ffff","#880088","#888800","#008888"]
-        self.barvaKurzoru = "#ffaaaa"
+        self.barvaKurzoru = "#ffbbbb"
         self.barvaKandidatu = "#000000"
         self.barvaHvezdickyUpoznamky = "#000000"
         self.barvaAkronymu = "#000000"
@@ -1077,6 +1614,13 @@ class SuSol(QtGui.QMainWindow):
         self.right = 0
 
         self.candMode = False
+        self.autoColor = False
+        self.casBezi = False
+        self.time = 0
+        self.timestamp = 0
+        self.timeBackup = 0
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.pricitat_cas)
 
         self.rezim = "reseni"
         self.zadani = [
@@ -1161,7 +1705,7 @@ class SuSol(QtGui.QMainWindow):
             [[],[],[],[],[],[],[],[],[]],
             [[],[],[],[],[],[],[],[],[]]]
 
-        QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("GTK+"))
+        QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("Windows"))
         self.setWindowTitle("SuSol")
         vyska = QtGui.QDesktopWidget().screenGeometry().height()
         sirka = QtGui.QDesktopWidget().screenGeometry().width()
@@ -1273,55 +1817,55 @@ class SuSol(QtGui.QMainWindow):
         self.cand9.stateChanged.connect(self.candChange9)
 
         self.color1 = QtGui.QPushButton()
-        self.color1.setStyleSheet("background-color: "+self.barvyBarev[0]+"; color: #ffffff")
+        self.color1.setStyleSheet("background-color: "+self.barvyBarev[0]+"; color: #000000")
         self.color1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color1.setMaximumWidth(20)
         self.color1.setCheckable(True)
         self.color1.clicked.connect(self.click1)
         self.color2 = QtGui.QPushButton()
-        self.color2.setStyleSheet("background-color: "+self.barvyBarev[1]+"; color: #ffffff")
+        self.color2.setStyleSheet("background-color: "+self.barvyBarev[1]+"; color: #000000")
         self.color2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color2.setMaximumWidth(20)
         self.color2.setCheckable(True)
         self.color2.clicked.connect(self.click2)
         self.color3 = QtGui.QPushButton()
-        self.color3.setStyleSheet("background-color: "+self.barvyBarev[2]+"; color: #ffffff")
+        self.color3.setStyleSheet("background-color: "+self.barvyBarev[2]+"; color: #000000")
         self.color3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color3.setMaximumWidth(20)
         self.color3.setCheckable(True)
         self.color3.clicked.connect(self.click3)
         self.color4 = QtGui.QPushButton()
-        self.color4.setStyleSheet("background-color: "+self.barvyBarev[3]+"; color: #ffffff")
+        self.color4.setStyleSheet("background-color: "+self.barvyBarev[3]+"; color: #000000")
         self.color4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color4.setMaximumWidth(20)
         self.color4.setCheckable(True)
         self.color4.clicked.connect(self.click4)
         self.color5 = QtGui.QPushButton()
-        self.color5.setStyleSheet("background-color: "+self.barvyBarev[4]+"; color: #ffffff")
+        self.color5.setStyleSheet("background-color: "+self.barvyBarev[4]+"; color: #000000")
         self.color5.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color5.setMaximumWidth(20)
         self.color5.setCheckable(True)
         self.color5.clicked.connect(self.click5)
         self.color6 = QtGui.QPushButton()
-        self.color6.setStyleSheet("background-color: "+self.barvyBarev[5]+"; color: #ffffff")
+        self.color6.setStyleSheet("background-color: "+self.barvyBarev[5]+"; color: #000000")
         self.color6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color6.setMaximumWidth(20)
         self.color6.setCheckable(True)
         self.color6.clicked.connect(self.click6)
         self.color7 = QtGui.QPushButton()
-        self.color7.setStyleSheet("background-color: "+self.barvyBarev[6]+"; color: #ffffff")
+        self.color7.setStyleSheet("background-color: "+self.barvyBarev[6]+"; color: #000000")
         self.color7.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color7.setMaximumWidth(20)
         self.color7.setCheckable(True)
         self.color7.clicked.connect(self.click7)
         self.color8 = QtGui.QPushButton()
-        self.color8.setStyleSheet("background-color: "+self.barvyBarev[7]+"; color: #ffffff")
+        self.color8.setStyleSheet("background-color: "+self.barvyBarev[7]+"; color: #000000")
         self.color8.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color8.setMaximumWidth(20)
         self.color8.setCheckable(True)
         self.color8.clicked.connect(self.click8)
         self.color9 = QtGui.QPushButton()
-        self.color9.setStyleSheet("background-color: "+self.barvyBarev[8]+"; color: #ffffff")
+        self.color9.setStyleSheet("background-color: "+self.barvyBarev[8]+"; color: #000000")
         self.color9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color9.setMaximumWidth(20)
         self.color9.setCheckable(True)
@@ -1393,9 +1937,9 @@ class SuSol(QtGui.QMainWindow):
         self.cas.setFont(pismo)
 
         self.casMenu = QtGui.QMenu()
-        self.casMenu.addAction("Start/Stop\tSpace",self.obnovit)
-        self.casMenu.addAction("Vynulovat",self.obnovit)
-        self.casMenu.addAction("Nastavit...",self.obnovit)
+        self.a1 = self.casMenu.addAction("Start/Stop\tSpace",self.startstop)
+        self.a2 = self.casMenu.addAction("Vynulovat",self.vynulovat)
+        self.a3 = self.casMenu.addAction("Nastavit...",self.nastavitCas)
         self.casMenu.setFocusPolicy(QtCore.Qt.NoFocus)
 
 
@@ -1413,13 +1957,28 @@ class SuSol(QtGui.QMainWindow):
 
         self.nastaveniBarev = QtGui.QPushButton()
         self.nastaveniBarev.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nastaveniBarev.setText("&Nastavení barev")
+        self.nastaveniBarev.setText("&Nastavení barev...")
         self.nastaveniBarev.clicked.connect(self.nastaveniBarevClick)
+
+        self.zabarvitDleKandidatu = QtGui.QPushButton()
+        self.zabarvitDleKandidatu.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zabarvitDleKandidatu.setText("&Zabarvit dle kandidátů")
+        self.zabarvitDleKandidatu.clicked.connect(self.zabarvitDleKandidatuClick)
+
+        self.restartovatBtn = QtGui.QPushButton()
+        self.restartovatBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.restartovatBtn.setText("&Restartovat")
+        self.restartovatBtn.clicked.connect(self.restartovatClick)
 
         self.vygenerovatKandidatyBtn = QtGui.QPushButton()
         self.vygenerovatKandidatyBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.vygenerovatKandidatyBtn.setText("Vygenerovat kandidáty")
         self.vygenerovatKandidatyBtn.clicked.connect(self.vygenerovatKandidaty)
+
+        self.vyresitBtn = QtGui.QPushButton()
+        self.vyresitBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.vyresitBtn.setText("Vyřešit")
+        self.vyresitBtn.clicked.connect(self.vyresit)
 
         self.poleLabel = QtGui.QLabel("A1")
         self.poleLabel.setStyleSheet("color: red")
@@ -1473,15 +2032,16 @@ class SuSol(QtGui.QMainWindow):
         vBoxlayout.addWidget(self.longNoteLabel,5,4)
         vBoxlayout.addWidget(self.longNoteBtn,6,4)
         vBoxlayout.addWidget(self.longNoteTB,7,4,6,7)
-        vBoxlayout.addWidget(self.odstranitBarvu,13,0,1,11)
-        vBoxlayout.addWidget(self.nastaveniBarev,14,0,1,11)
+        vBoxlayout.addWidget(self.odstranitBarvu,14,0,1,11)
+        vBoxlayout.addWidget(self.zabarvitDleKandidatu,13,0,1,11)
+        vBoxlayout.addWidget(self.nastaveniBarev,15,0,1,11)
+        vBoxlayout.addWidget(self.restartovatBtn,16,0,1,11)
         self.tab1.setLayout(vBoxlayout)
 
         vBoxlayout = QtGui.QGridLayout()
         vBoxlayout.addWidget(self.vygenerovatKandidatyBtn)
+        vBoxlayout.addWidget(self.vyresitBtn)
         self.tab2.setLayout(vBoxlayout)
-
-
 
         self.tabs.addTab(self.tab1,"Řešení")
         self.tabs.addTab(self.tab2,"Pomoc počítače")
@@ -1494,7 +2054,7 @@ class SuSol(QtGui.QMainWindow):
         self.setFocus()
 
 app = QtGui.QApplication(sys.argv)
-
-
 okno = SuSol()
 sys.exit(app.exec_())
+
+#TODO dalsi featury v pomoci pocitace

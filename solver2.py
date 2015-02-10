@@ -288,9 +288,48 @@ def bruteForce(reseni):
 
     return reseni
 
+def solvePC(zad):
+    #################POVINNA HLAVICKA######################
+    zadani = deepcopy(zad)
+    reseni = deepcopy(zadani)
+    kandidati = inicializovatKandidaty(reseni)
+    kandidati = generujKandidaty(kandidati,reseni)
+    #################POVINNA HLAVICKA######################
 
+    sudokuBef = None
+    candBef = None
+    nemaReseni = False
 
-def solve(zad):
+    while sudokuBef != reseni or candBef != kandidati:
+        while sudokuBef != reseni or candBef != kandidati:
+
+            sudokuBef = deepcopy(reseni)
+            candBef = deepcopy(kandidati)
+            vysl = lastPossibility(kandidati,reseni)
+            kandidati = vysl[0]
+            reseni = vysl[1]
+            kandidati = generujKandidaty(kandidati,reseni)
+
+        sudokuBef = deepcopy(reseni)
+        candBef = deepcopy(kandidati)
+        vysl = uniqueCandInGroup(kandidati,reseni)
+        kandidati = vysl[0]
+        reseni = vysl[1]
+        nemaReseni = vysl[2]
+        kandidati = generujKandidaty(kandidati,reseni)
+
+    if nemaReseni:
+        return False
+
+    if not sudokuVyreseno(reseni):
+        reseni = bruteForce(reseni)
+
+    if reseni == False:
+        return False
+    else:
+        return reseni
+
+def solveHuman(zad):
     #################POVINNA HLAVICKA######################
     zadani = deepcopy(zad)
     reseni = deepcopy(zadani)

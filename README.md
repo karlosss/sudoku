@@ -26,7 +26,7 @@ ALGORITMY:
 
 <br><br><br><br>
 
-![Screenshot](https://raw.githubusercontent.com/karlosss/sudoku/master/screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/karlosss/sudoku/blob/master/screenshot7.png)
 
 Program je psaný v jazyce Python.
 

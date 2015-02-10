@@ -14,6 +14,7 @@ TODO:
 - Režim zadávání, víceméně půjde o jedno dialogové okno, kde se buď ručně naklepe, nebo generátor vygeneruje nové sudoku, jestli zbyde čas, tak ještě zkusím tu OCR
 - Dokumentace solveru, který bude použitelný pro developery (počet lidí co ho použijí: 0)
 - Encyklopedie implementovaných strategií - viz níže
+- Tooltipy - až někdy budu mít kocovinu, tak se do toho pustím :)
 
 ALGORITMY:
 

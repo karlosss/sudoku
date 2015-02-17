@@ -5,9 +5,9 @@ Je tu trochu bordel, přes víkend tu snad uklidím
 
 Changelog:
 
-10. 2. - víceméně finální podoba GUI, je to v Qt a šlape to parádně. Z tréninkového režimu chybí dodělat pár věcí v záložce pomoc počítače (hint, kontrola, krokování postupu), jinak jeho konečná podoba je to, co je k vidění v současném demu (a také na screenshotu). V okně funguje vše až na hlavní menu (to v tom toolbaru nahoře).
+10/2 - víceméně finální podoba GUI, je to v Qt a šlape to parádně. Z tréninkového režimu chybí dodělat pár věcí v záložce pomoc počítače (hint, kontrola, krokování postupu), jinak jeho konečná podoba je to, co je k vidění v současném demu (a také na screenshotu). V okně funguje vše až na hlavní menu (to v tom toolbaru nahoře).
 
-17. 2. - dodělal jsem úvodní obrazovku, na ní ještě nefungují dvě ze čtyř tlačítek, generátor konečně zakomponován do programu, ačkoli potřebuje ještě vylepšení
+17/2 - dodělal jsem úvodní obrazovku, na ní ještě nefungují dvě ze čtyř tlačítek, generátor konečně zakomponován do programu, ačkoli potřebuje ještě vylepšení
 
 TODO: 
 

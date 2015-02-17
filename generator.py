@@ -1,5 +1,6 @@
 from __future__ import print_function
 import solver
+import solver2
 from random import randint
 from copy import deepcopy
 
@@ -68,9 +69,9 @@ def odeber_cisla(sudoku, bf=False, limit=0, singlesol=True):
                     break
 
             if bf:
-                reseni = solver.solve(sudoku, mode=2)
+                reseni = solver2.solvePC(sudoku, pocetReseni=2, bf=True)[0]
             else:
-                reseni = solver.solve(sudoku, mode=2, bf=False)
+                reseni = solver2.solvePC(sudoku, pocetReseni=2, bf=False)[0]
 
             if len(reseni) == 1:
                 odebrano = True

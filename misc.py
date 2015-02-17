@@ -88,3 +88,23 @@ def hms(integer):
 
     return "Čas: "+h+":"+m+":"+s
 
+def dekodovatCtverec(n):
+    if n == 0:
+        return "levém horním"
+    elif n == 1:
+        return "levém prostředním"
+    elif n == 2:
+        return "levém dolním"
+    elif n == 3:
+        return "prostředním horním"
+    elif n == 4:
+        return "prostředním"
+    elif n == 5:
+        return "prostředním dolním"
+    elif n == 6:
+        return "levém horním"
+    elif n == 7:
+        return "levém prostředním"
+    elif n == 8:
+        return "levém dolním"
+

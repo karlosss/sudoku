@@ -1,5 +1,6 @@
 from __future__ import print_function
 from copy import deepcopy
+from time import time
 
 def inicializovatKandidaty(sudoku): #vygeneruje cisla 1-9 do kandidatu
     kandidati = [
@@ -61,19 +62,31 @@ def generujKandidaty(kandidati,reseni): #vygeneruje soubor kandidatu pro kazde p
 
 
 
-def lastPossibility(kandidati,reseni): #pokud je v policku pouze jeden kandidat, tak je toto cislo oznaceno jako reseni pro dane policko
+def lastPossibility(kandidati,reseni,logovatPostup=False): #pokud je v policku pouze jeden kandidat, tak je toto cislo oznaceno jako reseni pro dane policko
+
+    postup = []
 
     for i in range(0,9,1):
         for j in range(0,9,1):
             if len(kandidati[i][j]) == 1:
                 reseni[i][j] = kandidati[i][j][0]
                 # print("last possibility: na pozici "+str(i)+","+str(j)+" doplnuji "+str(kandidati[i][j][0]))
+                postup = ["Naked Single",[i,j],kandidati[i][j][0]]
                 kandidati[i][j] = []
-                return [kandidati,reseni]
+                if logovatPostup:
+                    return [kandidati,reseni,postup]
+                else:
+                    return [kandidati,reseni]
 
-    return [kandidati,reseni]
+    if logovatPostup:
+        return [kandidati,reseni,postup]
+    else:
+        return [kandidati,reseni]
 
-def uniqueCandInGroup(kandidati,reseni): #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni; zaroven umi detekovat neresitelnost v pripade, ze v nejakem setu nejake cislo uplne chybi
+def uniqueCandInGroup(kandidati,reseni,logovatPostup=False): #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni; zaroven umi detekovat neresitelnost v pripade, ze v nejakem setu nejake cislo uplne chybi
+
+    postup = []
+
     nemaReseni = False
     for i in range(0,9,1):
         dmI = divmod(i,3)
@@ -105,7 +118,10 @@ def uniqueCandInGroup(kandidati,reseni): #kdyz je v danem setu nejaky kandidat p
         for k in range(1,10,1):
             if k not in zadanaCislaVradku+kandidatiVradku or k not in zadanaCislaVsloupci+kandidatiVsloupci or k not in zadanaCislaVctverci+kandidatiVctverci: #kdyz v nejakem setu cislo chybi uplne, tak sudoku nema reseni
                 nemaReseni = True
-                return [kandidati,reseni,nemaReseni]
+                if logovatPostup:
+                    return [kandidati,reseni,nemaReseni,postup]
+                else:
+                    return [kandidati,reseni,nemaReseni]
 
             if kandidatiVradku.count(k) == 1: #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni
                 for l in range(0,9,1):
@@ -113,7 +129,11 @@ def uniqueCandInGroup(kandidati,reseni): #kdyz je v danem setu nejaky kandidat p
                         reseni[i][l] = k
                         kandidati[i][l] = []
                         # print("unique cand: na radku "+str(i)+" na pozici "+str(i)+","+str(l)+" doplnuji "+str(k))
-                        return [kandidati,reseni,nemaReseni]
+                        postup = ["Hidden Single",["r",i],[i,l],k]
+                        if logovatPostup:
+                            return [kandidati,reseni,nemaReseni,postup]
+                        else:
+                            return [kandidati,reseni,nemaReseni]
 
             if kandidatiVsloupci.count(k) == 1:
                 for l in range(0,9,1):
@@ -121,7 +141,11 @@ def uniqueCandInGroup(kandidati,reseni): #kdyz je v danem setu nejaky kandidat p
                         reseni[l][i] = k
                         kandidati[l][i] = []
                         # print("unique cand: ve sloupci "+str(i)+" na pozici "+str(l)+","+str(i)+" doplnuji "+str(k))
-                        return [kandidati,reseni,nemaReseni]
+                        postup = ["Hidden Single",["s",i],[l,i],k]
+                        if logovatPostup:
+                            return [kandidati,reseni,nemaReseni,postup]
+                        else:
+                            return [kandidati,reseni,nemaReseni]
 
             if kandidatiVctverci.count(k) == 1:
                 for l in range(0,9,1):
@@ -132,70 +156,16 @@ def uniqueCandInGroup(kandidati,reseni): #kdyz je v danem setu nejaky kandidat p
                         reseni[x][y] = k
                         kandidati[x][y] = []
                         # print("unique cand: ve ctverci "+str(i)+" na pozici "+str(x)+","+str(y)+" doplnuji "+str(k))
-                        return [kandidati,reseni,nemaReseni]
+                        postup = ["Hidden Single",["c",i],[x,y],k]
+                        if logovatPostup:
+                            return [kandidati,reseni,nemaReseni,postup]
+                        else:
+                            return [kandidati,reseni,nemaReseni]
 
-    return [kandidati,reseni,nemaReseni]
-
-def nakedPair(kandidati,reseni):
-    for i in range(0,9,1):
-        dmI = divmod(i,3)
-
-
-
-        for j in range(0,9,1):
-            dmJ = divmod(j,3)
-            x = dmI[1]*3+dmJ[1]
-            y = dmI[0]*3+dmJ[0]
-
-            if len(kandidati[i][j]) == 2:
-                for k in range(0,9,1):
-                    if k == j:
-                        continue
-                    if kandidati[i][j] == kandidati[i][k]:
-                        for l in range(0,9,1):
-                            if l != j and l != k:
-                                for m in kandidati[i][j]:
-                                    if m in kandidati[i][l]:
-                                        kandidati[i][l].remove(m)
-                                        print("naked pair: na radku "+str(i)+" se na pozicich "+str(i)+","+str(j)+" a "+str(i)+","+str(k)+" nachazi stejna dvojice kandidatu; proto z pozice "+str(i)+","+str(l)+" odebiram "+str(m))
-                                        return [kandidati,reseni]
-
-            if len(kandidati[j][i]) == 2:
-                for k in range(0,9,1):
-                    if k == j:
-                        continue
-                    if kandidati[j][i] == kandidati[k][i]:
-                        for l in range(0,9,1):
-                            if l != j and l != k:
-                                for m in kandidati[j][i]:
-                                    if m in kandidati[l][i]:
-                                        kandidati[l][i].remove(m)
-                                        print("naked pair: ve sloupci "+str(i)+" se na pozicich "+str(j)+","+str(i)+" a "+str(k)+","+str(i)+" nachazi stejna dvojice kandidatu; proto z pozice "+str(l)+","+str(i)+" odebiram "+str(m))
-                                        return [kandidati,reseni]
-
-
-            if len(kandidati[x][y]) == 2:
-                for k in range(0,9,1):
-                    dmJ = divmod(k,3)
-                    x1 = dmI[1]*3+dmJ[1]
-                    y1 = dmI[0]*3+dmJ[0]
-
-                    if (x1,y1) == (x,y):
-                        continue
-                    if kandidati[x][y] == kandidati[x1][y1]:
-                        for l in range(0,9,1):
-                            if l != j and l != k:
-                                for m in kandidati[x][y]:
-                                    if m in kandidati[x1][y1]:
-                                        kandidati[x1][y1].remove(m)
-                                        print("naked pair: ve ctverci "+str(i)+" se na pozicich "+str(x)+","+str(y)+" a "+str(x1)+","+str(y1)+" nachazi stejna dvojice kandidatu; proto z pozice "+str(x1)+","+str(y1)+" odebiram "+str(m))
-                                        return [kandidati,reseni]
-
-    return [kandidati,reseni]
-
-
-
-
+    if logovatPostup:
+        return [kandidati,reseni,nemaReseni,postup]
+    else:
+        return [kandidati,reseni,nemaReseni]
 
 
 def sudokuVyreseno(reseni): #test, zda je sudoku vyreseno (neobsahuje nulu)
@@ -294,13 +264,9 @@ def bruteForce(reseni,pocetReseni):
 
     return toReturn
 
-
-
-
-
-
-def solvePC(zad,pocetReseni=1):
+def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni a prvni prvek je cas v milisekundach
     #################POVINNA HLAVICKA######################
+    cas = time()
     zadani = deepcopy(zad)
     reseni = deepcopy(zadani)
     kandidati = inicializovatKandidaty(reseni)
@@ -330,20 +296,28 @@ def solvePC(zad,pocetReseni=1):
         kandidati = generujKandidaty(kandidati,reseni)
 
     if nemaReseni:
-        return False
+        return [[],(time()-cas)*1000]
 
-    if not sudokuVyreseno(reseni):
+    if not sudokuVyreseno(reseni) and bf:
         reseni = bruteForce(reseni,pocetReseni)
+    else:
+        reseni = [reseni]
 
-    return reseni
+    return [reseni,(time()-cas)*1000]
 
 def solveHuman(zad):
     #################POVINNA HLAVICKA######################
+    cas = time()
     zadani = deepcopy(zad)
     reseni = deepcopy(zadani)
     kandidati = inicializovatKandidaty(reseni)
     kandidati = generujKandidaty(kandidati,reseni)
+    postup = []
     #################POVINNA HLAVICKA######################
+
+    pokus = solvePC(zadani)
+    if len(pokus[0]) == 0:
+        return [[],(time()-cas)*1000,False,True] #nema reseni
 
     sudokuBef = None
     candBef = None
@@ -351,42 +325,31 @@ def solveHuman(zad):
 
     while sudokuBef != reseni or candBef != kandidati:
         while sudokuBef != reseni or candBef != kandidati:
-            while sudokuBef != reseni or candBef != kandidati:
-
-                sudokuBef = deepcopy(reseni)
-                candBef = deepcopy(kandidati)
-                vysl = lastPossibility(kandidati,reseni)
-                kandidati = vysl[0]
-                reseni = vysl[1]
-                kandidati = generujKandidaty(kandidati,reseni)
 
             sudokuBef = deepcopy(reseni)
             candBef = deepcopy(kandidati)
-            vysl = uniqueCandInGroup(kandidati,reseni)
+            vysl = lastPossibility(kandidati,reseni,logovatPostup=True)
             kandidati = vysl[0]
             reseni = vysl[1]
-            nemaReseni = vysl[2]
+            if vysl[2] != []:
+                postup.append(vysl[2])
+                return [postup,(time()-cas),True,True]
             kandidati = generujKandidaty(kandidati,reseni)
 
         sudokuBef = deepcopy(reseni)
         candBef = deepcopy(kandidati)
-        vysl = nakedPair(kandidati,reseni)
+        vysl = uniqueCandInGroup(kandidati,reseni,logovatPostup=True)
         kandidati = vysl[0]
         reseni = vysl[1]
+        nemaReseni = vysl[2]
+        if vysl[3] != []:
+            postup.append(vysl[3])
+            return [postup,(time()-cas),True,True]
         kandidati = generujKandidaty(kandidati,reseni)
 
         if nemaReseni:
-            return False
+            return [[],(time()-cas)*1000,False,True]
 
     if not sudokuVyreseno(reseni):
-        reseni = bruteForce(reseni)
-
-
-
-    if reseni == False:
-        print("nema reseni")
-
-    else:
-        for i in reseni:
-            print(i)
+        return [postup,(time()-cas)*1000,True,False]
 

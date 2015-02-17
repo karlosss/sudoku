@@ -75,5 +75,6 @@ sudoku = [
 
 
 start = time.time()
-solver2.solve(sudoku)
+# solver2.solve(sudoku)
+print(3**4**5+4**5**6)
 print time.time()-start

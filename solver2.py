@@ -2,6 +2,32 @@ from __future__ import print_function
 from copy import deepcopy
 from time import time
 
+
+def zkontrolovatVstup(sudoku):
+    try:
+        for i in range(0,9,1):
+            dmI = divmod(i,3)
+            radek = []
+            sloupec = []
+            ctverec = []
+            for j in range(0,9,1):
+                dmJ = divmod(j,3)
+                x = dmI[1]*3+dmJ[1]
+                y = dmI[0]*3+dmJ[0]
+                radek.append(sudoku[i][j])
+                sloupec.append(sudoku[j][i])
+                ctverec.append(sudoku[x][y])
+
+            for j in range(1,10,1):
+                if radek.count(j) > 1 or sloupec.count(j) > 1 or ctverec.count(j) > 1:
+                    return False
+        return True
+    except:
+        return False
+
+
+
+
 def inicializovatKandidaty(sudoku): #vygeneruje cisla 1-9 do kandidatu
     kandidati = [
         [[],[],[],[],[],[],[],[],[]],
@@ -272,6 +298,9 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
     kandidati = inicializovatKandidaty(reseni)
     kandidati = generujKandidaty(kandidati,reseni)
     #################POVINNA HLAVICKA######################
+
+    if not zkontrolovatVstup(zadani):
+        return [[],(time()-cas)*1000]
 
     sudokuBef = None
     candBef = None

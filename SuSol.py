@@ -684,7 +684,9 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zobrazElementy("reseni")
 
     def vlastniClick(self):
-        print("vlastni")
+        okno.zadaniBackup = deepcopy(okno.zadani)
+        self.close()
+        okno.zobrazElementy("reseni")
 
     def __init__(self):
         super(GeneratorDialog,self).__init__()
@@ -900,7 +902,7 @@ class SuSol(QtGui.QMainWindow):
 
 
 
-        if self.rezim in ("reseni","na_cas"):
+        if self.rezim in ("reseni","na_cas","zadavani"):
             #painter.begin(self)
             Xpos = 10
             Ypos = 30
@@ -1100,7 +1102,7 @@ class SuSol(QtGui.QMainWindow):
         x = event.x()
         y = event.y()
 
-        if self.rezim in ("reseni","na_cas"):
+        if self.rezim in ("reseni","na_cas","zadavani"):
             squareSize = min((self.frameGeometry().height()-self.Ypos-2*self.margin-self.bottom)/9,(self.frameGeometry().width()-self.Xpos-2*self.margin-self.right)/9)
 
             if (x-self.Xpos)//squareSize >= 0 and (x-self.Xpos)//squareSize < 9 and (y-self.Ypos)//squareSize >= 0 and (y-self.Ypos)//squareSize < 9:
@@ -1216,7 +1218,7 @@ class SuSol(QtGui.QMainWindow):
 
     def doplnCislo(self,cislo):
         if self.rezim in ("zadavani"):
-            self.zadani[self.curX][self.curY] = cislo
+            self.zadani[self.curY][self.curX] = cislo
             self.update()
         if self.rezim in ("reseni","na_cas"):
             if self.candMode == False:
@@ -1392,10 +1394,11 @@ class SuSol(QtGui.QMainWindow):
 
 
         self.mainNumber.setCurrentIndex(self.zadani[self.curY][self.curX]+self.reseni[self.curY][self.curX])
-        if self.zadani[self.curY][self.curX] != 0:
-            self.mainNumber.setDisabled(True)
-        else:
-            self.mainNumber.setDisabled(False)
+        if self.rezim != "zadavani":
+            if self.zadani[self.curY][self.curX] != 0:
+                self.mainNumber.setDisabled(True)
+            else:
+                self.mainNumber.setDisabled(False)
 
         self.shortNoteTB.setText(self.akronymy[self.curY][self.curX])
         self.longNoteTB.setText(self.poznamky[self.curY][self.curX])
@@ -1954,31 +1957,30 @@ class SuSol(QtGui.QMainWindow):
     def ukazatChyby(self):
         self.odstranitIndikatory()
         bezchyby = True
-        temp = solver2.solvePC(self.zadani,pocetReseni=0)
-        pocetChyb = []
-        for i in temp[0]:
-            chyby = 0
-            for j in range(0,9,1):
-                for k in range(0,9,1):
-                    if self.doplneno[j][k] != i[j][k]:
-                        chyby = chyby + 1
+        temp = solver2.solvePC(self.zadani,pocetReseni=2)
 
-            pocetChyb.append(chyby)
+        if len(temp) > 1:
+            self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá jednoznačné řešení, tato funkce není k dispozici.</b></font>")
+            self.update()
+            return False
+        elif len(temp) == 0:
+            self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá řešení, tato funkce není k dispozici.</b></font>")
+            self.update()
+            return False
 
-        nejmeneChyb = deepcopy(temp[0][pocetChyb.index(min(pocetChyb))])
         for i in range(0,9,1):
             for j in range(0,9,1):
-                if self.doplneno[i][j] != nejmeneChyb[i][j] and self.doplneno[i][j] != 0:
+                if self.doplneno[i][j] != temp[0][i][j] and self.doplneno[i][j] != 0:
                     self.chyby[i][j] = 1
                     bezchyby = False
 
         if bezchyby:
             QtGui.QMessageBox.information(None,"Info","Sudoku je bez chyb ("+str(int(temp[1]))+" ms).")
             self.ukecanejBanner.setText("Sudoku je bez chyb.")
+            self.update()
         else:
             self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku obsahuje chyby.</b></font>")
-
-        self.update()
+            self.update()
 
     def poraditStrategii(self):
         self.odstranitIndikatory()
@@ -1988,9 +1990,11 @@ class SuSol(QtGui.QMainWindow):
             return False
 
         kroky = solver2.solveHuman(self.doplneno)
-        if len(kroky[0]) == 0:
+        if len(kroky[0]) == 0 and len(solver2.solvePC(self.doplneno)[0]) == 0:
             QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby. Nejprve je opravte.")
             self.ukazatChyby()
+        elif len(kroky[0]) == 0:
+            QtGui.QMessageBox.information(None,"Info","Sudoku nelze za pomoci implementovaných strategií vyřešit.")
         else:
             QtGui.QMessageBox.information(None,"Info","Použij "+kroky[0][0][0]+".")
             self.ukecanejBanner.setText("Použij <b>"+kroky[0][0][0]+"</b>.")
@@ -2006,10 +2010,14 @@ class SuSol(QtGui.QMainWindow):
         self.odstranitIndikatory()
 
         kroky = solver2.solveHuman(self.doplneno)
-        if len(kroky[0]) == 0:
+        if len(kroky[0]) == 0 and len(solver2.solvePC(self.doplneno)[0]) == 0:
             QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby. Nejprve je opravte.")
             self.ukazatChyby()
         else:
+            if len(kroky[0]) == 0:
+                QtGui.QMessageBox.information(None,"Info","Sudoku nelze za pomoci implementovaných strategií vyřešit.")
+                return False
+
             if kroky[0][0][0] == "Hidden Single":
                 if kroky[0][0][1][0] == "r":
                     kde = "V <font color='#888833'><b>řádku "+num2alpha(kroky[0][0][1][1])+"</font> "
@@ -2032,6 +2040,10 @@ class SuSol(QtGui.QMainWindow):
             elif kroky[0][0][0] == "Naked Single":
                 self.ukecanejBanner.setText("<b>Naked Single:</b> Na políčku <b><font color='#00aa00'>"+num2alpha(kroky[0][0][1][0])+str(kroky[0][0][1][1]+1)+"</b></font> může být pouze číslo <b>"+str(kroky[0][0][2])+"</b>. Proto jej tam můžeme dopsat.")
                 self.indikace3[kroky[0][0][1][0]][kroky[0][0][1][1]] = 1
+
+    def vzdatSe(self):
+        print("vzdat se")
+        #TODO
 
     def tabsReseni(self):
         self.tabs = QtGui.QTabWidget(self)
@@ -2375,6 +2387,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.upravitWidgety()
         self.setFocus()
+
     def tabsNaCas(self):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -2609,8 +2622,8 @@ class SuSol(QtGui.QMainWindow):
 
         self.restartovatBtn = QtGui.QPushButton()
         self.restartovatBtn.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.restartovatBtn.setText("&Restartovat")
-        self.restartovatBtn.clicked.connect(self.restartovatClick)
+        self.restartovatBtn.setText("&Vzdát se")
+        self.restartovatBtn.clicked.connect(self.vzdatSe)
 
         self.vygenerovatKandidatyBtn = QtGui.QPushButton()
         self.vygenerovatKandidatyBtn.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -2712,10 +2725,316 @@ class SuSol(QtGui.QMainWindow):
         self.tab2.setLayout(vBoxlayout)
 
         self.tabs.addTab(self.tab1,"Řešení")
-        # self.tabs.addTab(self.tab2,"Pomoc počítače")
         self.tabs.show()
 
         self.startstop()
+
+        self.upravitWidgety()
+        self.setFocus()
+
+    def mainNumberChosenZadani(self,cislo):
+        self.zadani[self.curY][self.curX] = cislo
+        self.upravitWidgety()
+        self.update()
+
+    def smazatVsechnaCisla(self):
+        self.zadani = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.upravitWidgety()
+        self.update()
+
+    def hotovo(self):
+        if len(solver2.solvePC(self.zadani,2)[0]) == 0:
+            QtGui.QMessageBox.critical(None,"Chyba","Sudoku nemá řešení.")
+            return False
+        if len(solver2.solvePC(self.zadani,2)[0]) == 2:
+            dotaz = QtGui.QMessageBox.question(None,"Dotaz","Sudoku není jednoznačné. Chcete jej přesto řešit?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if dotaz == QtGui.QMessageBox.Cancel:
+                return False
+
+        self.zadaniBackup = deepcopy(self.zadani)
+        self.zobrazElementy("reseni")
+
+    def zkontrolovatJednoznacnost(self):
+        pocetReseni = len(solver2.solvePC(self.zadani,2)[0])
+        if pocetReseni == 0:
+            self.ukecanejBanner.setText("Sudoku nemá řešení.")
+        elif pocetReseni == 1:
+            self.ukecanejBanner.setText("Sudoku je jednoznačné.")
+        elif pocetReseni == 2:
+            self.ukecanejBanner.setText("Sudoku není jednoznačné.")
+
+    def tabsZadavani(self):
+        self.tabs = QtGui.QTabWidget(self)
+        self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(20)
+
+        self.mainNumber = QtGui.QComboBox()
+        self.mainNumber.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainNumber.setMinimumHeight(30)
+        self.mainNumber.addItem("nic")
+        self.mainNumber.addItem("1")
+        self.mainNumber.addItem("2")
+        self.mainNumber.addItem("3")
+        self.mainNumber.addItem("4")
+        self.mainNumber.addItem("5")
+        self.mainNumber.addItem("6")
+        self.mainNumber.addItem("7")
+        self.mainNumber.addItem("8")
+        self.mainNumber.addItem("9")
+        self.mainNumber.activated.connect(self.mainNumberChosenZadani)
+
+        self.mainNumberLabel = QtGui.QLabel()
+        self.mainNumberLabel.setText("Číslo")
+        self.mainNumberLabel.setFont(pismo)
+        self.mainNumberLabel.setMinimumHeight(30)
+        self.mainNumberLabel.setMinimumWidth(80)
+
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(15)
+
+        self.candLabel = QtGui.QLabel()
+        self.candLabel.setText("Kandidáti")
+        self.candLabel.setFont(pismo)
+        self.candLabel.setMinimumHeight(30)
+        self.candLabel.setMinimumWidth(80)
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(15)
+
+        self.colorLabel = QtGui.QLabel()
+        self.colorLabel.setText("Barvy")
+        self.colorLabel.setFont(pismo)
+        self.colorLabel.setMinimumHeight(30)
+        self.colorLabel.setMinimumWidth(80)
+
+        self.cand1 = QtGui.QCheckBox("1")
+        self.cand1.setMinimumHeight(30)
+        self.cand1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand1.stateChanged.connect(self.candChange1)
+        self.cand2 = QtGui.QCheckBox("2")
+        self.cand2.setMinimumHeight(30)
+        self.cand2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand2.stateChanged.connect(self.candChange2)
+        self.cand3 = QtGui.QCheckBox("3")
+        self.cand3.setMinimumHeight(30)
+        self.cand3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand3.stateChanged.connect(self.candChange3)
+        self.cand4 = QtGui.QCheckBox("4")
+        self.cand4.setMinimumHeight(30)
+        self.cand4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand4.stateChanged.connect(self.candChange4)
+        self.cand5 = QtGui.QCheckBox("5")
+        self.cand5.setMinimumHeight(30)
+        self.cand5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand5.stateChanged.connect(self.candChange5)
+        self.cand6 = QtGui.QCheckBox("6")
+        self.cand6.setMinimumHeight(30)
+        self.cand6.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand6.stateChanged.connect(self.candChange6)
+        self.cand7 = QtGui.QCheckBox("7")
+        self.cand7.setMinimumHeight(30)
+        self.cand7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand7.stateChanged.connect(self.candChange7)
+        self.cand8 = QtGui.QCheckBox("8")
+        self.cand8.setMinimumHeight(30)
+        self.cand8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand8.stateChanged.connect(self.candChange8)
+        self.cand9 = QtGui.QCheckBox("9")
+        self.cand9.setMinimumHeight(30)
+        self.cand9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cand9.stateChanged.connect(self.candChange9)
+
+        self.color1 = QtGui.QPushButton()
+        self.color1.setStyleSheet("background-color: "+self.barvyBarev[0]+"; color: #000000")
+        self.color1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1.setMaximumWidth(20)
+        self.color1.setCheckable(True)
+        self.color1.clicked.connect(self.click1)
+        self.color2 = QtGui.QPushButton()
+        self.color2.setStyleSheet("background-color: "+self.barvyBarev[1]+"; color: #000000")
+        self.color2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color2.setMaximumWidth(20)
+        self.color2.setCheckable(True)
+        self.color2.clicked.connect(self.click2)
+        self.color3 = QtGui.QPushButton()
+        self.color3.setStyleSheet("background-color: "+self.barvyBarev[2]+"; color: #000000")
+        self.color3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color3.setMaximumWidth(20)
+        self.color3.setCheckable(True)
+        self.color3.clicked.connect(self.click3)
+        self.color4 = QtGui.QPushButton()
+        self.color4.setStyleSheet("background-color: "+self.barvyBarev[3]+"; color: #000000")
+        self.color4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color4.setMaximumWidth(20)
+        self.color4.setCheckable(True)
+        self.color4.clicked.connect(self.click4)
+        self.color5 = QtGui.QPushButton()
+        self.color5.setStyleSheet("background-color: "+self.barvyBarev[4]+"; color: #000000")
+        self.color5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color5.setMaximumWidth(20)
+        self.color5.setCheckable(True)
+        self.color5.clicked.connect(self.click5)
+        self.color6 = QtGui.QPushButton()
+        self.color6.setStyleSheet("background-color: "+self.barvyBarev[5]+"; color: #000000")
+        self.color6.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color6.setMaximumWidth(20)
+        self.color6.setCheckable(True)
+        self.color6.clicked.connect(self.click6)
+        self.color7 = QtGui.QPushButton()
+        self.color7.setStyleSheet("background-color: "+self.barvyBarev[6]+"; color: #000000")
+        self.color7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color7.setMaximumWidth(20)
+        self.color7.setCheckable(True)
+        self.color7.clicked.connect(self.click7)
+        self.color8 = QtGui.QPushButton()
+        self.color8.setStyleSheet("background-color: "+self.barvyBarev[7]+"; color: #000000")
+        self.color8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color8.setMaximumWidth(20)
+        self.color8.setCheckable(True)
+        self.color8.clicked.connect(self.click8)
+        self.color9 = QtGui.QPushButton()
+        self.color9.setStyleSheet("background-color: "+self.barvyBarev[8]+"; color: #000000")
+        self.color9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color9.setMaximumWidth(20)
+        self.color9.setCheckable(True)
+        self.color9.clicked.connect(self.click9)
+
+        self.color1check1 = QtGui.QCheckBox()
+        self.color1check1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check1.setChecked(True)
+        self.color1check1.stateChanged.connect(self.colorChange1)
+        self.color1check2 = QtGui.QCheckBox()
+        self.color1check2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check2.setChecked(True)
+        self.color1check2.stateChanged.connect(self.colorChange2)
+        self.color1check3 = QtGui.QCheckBox()
+        self.color1check3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check3.setChecked(True)
+        self.color1check3.stateChanged.connect(self.colorChange3)
+        self.color1check4 = QtGui.QCheckBox()
+        self.color1check4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check4.setChecked(True)
+        self.color1check4.stateChanged.connect(self.colorChange4)
+        self.color1check5 = QtGui.QCheckBox()
+        self.color1check5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check5.setChecked(True)
+        self.color1check5.stateChanged.connect(self.colorChange5)
+        self.color1check6 = QtGui.QCheckBox()
+        self.color1check6.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check6.setChecked(True)
+        self.color1check6.stateChanged.connect(self.colorChange6)
+        self.color1check7 = QtGui.QCheckBox()
+        self.color1check7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check7.setChecked(True)
+        self.color1check7.stateChanged.connect(self.colorChange7)
+        self.color1check8 = QtGui.QCheckBox()
+        self.color1check8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check8.setChecked(True)
+        self.color1check8.stateChanged.connect(self.colorChange8)
+        self.color1check9 = QtGui.QCheckBox()
+        self.color1check9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.color1check9.setChecked(True)
+        self.color1check9.stateChanged.connect(self.colorChange9)
+
+        self.shortNoteLabel = QtGui.QLabel()
+        self.shortNoteLabel.setText("Akronym")
+
+        self.shortNoteBtn = QtGui.QPushButton()
+        self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.shortNoteBtn.setText("&Editovat")
+        self.shortNoteBtn.clicked.connect(self.editShortNote)
+
+        self.shortNoteTB = QtGui.QLineEdit()
+        self.shortNoteTB.setDisabled(True)
+        self.shortNoteTB.setStyleSheet("background-color: #ffffff")
+
+        self.longNoteLabel = QtGui.QLabel()
+        self.longNoteLabel.setText("Poznámka")
+        self.longNoteLabel.setMinimumWidth(80)
+
+        self.longNoteBtn = QtGui.QPushButton()
+        self.longNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.longNoteBtn.setText("E&ditovat")
+        self.longNoteBtn.clicked.connect(self.editLongNote)
+
+        self.longNoteTB = QtGui.QTextEdit()
+        self.longNoteTB.setDisabled(True)
+
+        self.cas = QtGui.QLabel()
+        self.cas.setText("Čas: 0:00:00")
+        self.cas.setFont(pismo)
+
+        self.casMenu = QtGui.QMenu()
+        self.a1 = self.casMenu.addAction("Start/Stop\tSpace",self.startstop)
+        self.a2 = self.casMenu.addAction("Vynulovat",self.vynulovat)
+        self.a3 = self.casMenu.addAction("Nastavit...",self.nastavitCas)
+        self.casMenu.setFocusPolicy(QtCore.Qt.NoFocus)
+
+
+        self.casStartStop = QtGui.QPushButton()
+        self.casStartStop.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.casStartStop.setStyleSheet("background-color: #ff0000; color: #ffffff")
+        self.casStartStop.setText("&Možnosti")
+        self.casStartStop.setMenu(self.casMenu)
+
+        self.zkontrolovatJednoznacnostBtn = QtGui.QPushButton()
+        self.zkontrolovatJednoznacnostBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zkontrolovatJednoznacnostBtn.setText("&Zkontrolovat jednoznačnost")
+        self.zkontrolovatJednoznacnostBtn.clicked.connect(self.zkontrolovatJednoznacnost)
+
+        self.hotovoBtn = QtGui.QPushButton()
+        self.hotovoBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.hotovoBtn.setText("&Hotovo")
+        self.hotovoBtn.clicked.connect(self.hotovo)
+
+        self.smazatVseBtn = QtGui.QPushButton()
+        self.smazatVseBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.smazatVseBtn.setText("&Smazat všechna čísla")
+        self.smazatVseBtn.clicked.connect(self.smazatVsechnaCisla)
+
+        self.jinyZpusob = QtGui.QPushButton()
+        self.jinyZpusob.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.jinyZpusob.setText("&Jiné metody zadávání...")
+        self.jinyZpusob.clicked.connect(self.vzdatSe)
+
+
+        self.poleLabel = QtGui.QLabel("A1")
+        self.poleLabel.setStyleSheet("color: red")
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(20)
+        pismo.setBold(True)
+        self.poleLabel.setFont(pismo)
+        self.poleLabel.setMinimumWidth(250)
+
+        self.tab1 = QtGui.QWidget()
+        self.tab2 = QtGui.QWidget()
+
+        vBoxlayout = QtGui.QGridLayout()
+
+        vBoxlayout.addWidget(self.poleLabel,0,0,4,10)
+        vBoxlayout.addWidget(self.mainNumber,1,1,1,10)
+        vBoxlayout.addWidget(self.mainNumberLabel,1,0)
+        vBoxlayout.addWidget(self.hotovoBtn,13,0,1,11)
+        vBoxlayout.addWidget(self.zkontrolovatJednoznacnostBtn,14,0,1,11)
+        vBoxlayout.addWidget(self.smazatVseBtn,15,0,1,11)
+        vBoxlayout.addWidget(self.jinyZpusob,16,0,1,11)
+        self.tab1.setLayout(vBoxlayout)
+
+        self.tabs.addTab(self.tab1,"Zadávání")
+        self.tabs.show()
 
         self.upravitWidgety()
         self.setFocus()
@@ -2725,7 +3044,7 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def wb2click(self):
-        print("wb2click")
+        self.zobrazElementy("zadavani")
 
     def wb3click(self):
         dialog = GeneratorDialog()
@@ -2762,6 +3081,11 @@ class SuSol(QtGui.QMainWindow):
         if self.rezim == "na_cas":
             self.setWindowTitle("SuSol - Řešení na čas")
             self.tabsNaCas()
+
+        if self.rezim == "zadavani":
+            self.setWindowTitle("SuSol - Zadávání")
+            self.tabsZadavani()
+
 
         self.update()
 
@@ -2813,15 +3137,15 @@ class SuSol(QtGui.QMainWindow):
 
         self.rezim = "welcome_screen"
         self.zadani = [
-            [0,6,1,0,0,7,0,0,3],
-            [0,9,2,0,0,3,0,0,0],
             [0,0,0,0,0,0,0,0,0],
-            [0,0,8,5,3,0,0,0,0],
-            [0,0,0,0,0,0,5,0,4],
-            [5,0,0,0,0,8,0,0,0],
-            [0,4,0,0,0,0,0,0,1],
-            [0,0,0,1,6,0,8,0,0],
-            [6,0,0,0,0,0,0,0,0]
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
             ]
 
         self.zadaniBackup = deepcopy(self.zadani)

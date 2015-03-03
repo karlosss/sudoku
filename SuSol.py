@@ -9,6 +9,9 @@ import sys
 import solver2
 import generator
 
+def todo():
+    QtGui.QMessageBox.critical(None,"TODO","TODO")
+
 class ShortNoteDialog(QtGui.QDialog):
 
     def setTitle(self,title):
@@ -695,10 +698,10 @@ class GeneratorDialog(QtGui.QDialog):
         self.resize(600,300)
 
         pismo = QtGui.QFont("Arial")
-        pismo.setPixelSize(30)
+        pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
-        obtiznost = QtGui.QLabel("Vygeneruji nové sudoku. Zvol si obtížnost.")
+        obtiznost = QtGui.QLabel("Vygeneruji nové sudoku. Zvol si obtížnost:")
         obtiznost.setFont(pismo)
 
         self.lehke = QtGui.QPushButton()
@@ -778,10 +781,10 @@ class GeneratorDialog2(QtGui.QDialog):
         self.resize(600,300)
 
         pismo = QtGui.QFont("Arial")
-        pismo.setPixelSize(30)
+        pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
-        obtiznost = QtGui.QLabel("Vygeneruji nové sudoku. Zvol si obtížnost.")
+        obtiznost = QtGui.QLabel("Vygeneruji nové sudoku. Zvol si obtížnost:")
         obtiznost.setFont(pismo)
 
         self.lehke = QtGui.QPushButton()
@@ -830,6 +833,160 @@ class GeneratorDialog2(QtGui.QDialog):
         layout.addWidget(self.stredni,5,1)
         layout.addWidget(self.tezke,5,2)
         layout.addWidget(self.vlastni,5,3)
+
+class GeneratorDialog3(QtGui.QDialog):
+
+    def lehkeClick(self):
+        okno.zadani = generator.generate(limit=40)
+        okno.zadaniBackup = deepcopy(okno.zadani)
+        self.close()
+        okno.zobrazElementy("zadavani")
+
+    def stredniClick(self):
+        okno.zadani = generator.generate()
+        okno.zadaniBackup = deepcopy(okno.zadani)
+        self.close()
+        okno.zobrazElementy("zadavani")
+
+    def tezkeClick(self):
+        okno.zadani = generator.generate(bf=True)
+        okno.zadaniBackup = deepcopy(okno.zadani)
+        self.close()
+        okno.zobrazElementy("zadavani")
+
+    def vlastniClick(self):
+        todo()
+
+    def __init__(self):
+        super(GeneratorDialog3,self).__init__()
+
+        self.setWindowTitle("Vygenerovat")
+        self.resize(600,300)
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(25)
+
+        layout = QtGui.QGridLayout(self)
+        obtiznost = QtGui.QLabel("Vygeneruji nové sudoku. Zvol si obtížnost:")
+        obtiznost.setFont(pismo)
+
+        self.lehke = QtGui.QPushButton()
+        self.lehke.setText("Lehké")
+        self.lehke.setFont(pismo)
+        self.lehke.setMinimumWidth(150)
+        self.lehke.setMinimumHeight(150)
+        self.lehke.setMaximumWidth(150)
+        self.lehke.setMaximumHeight(150)
+        self.lehke.clicked.connect(self.lehkeClick)
+
+        self.stredni = QtGui.QPushButton()
+        self.stredni.setText("Střední")
+        self.stredni.setFont(pismo)
+        self.stredni.setMinimumWidth(150)
+        self.stredni.setMinimumHeight(150)
+        self.stredni.setMaximumWidth(150)
+        self.stredni.setMaximumHeight(150)
+        self.stredni.clicked.connect(self.stredniClick)
+
+        self.tezke = QtGui.QPushButton()
+        self.tezke.setText("Těžké")
+        self.tezke.setFont(pismo)
+        self.tezke.setMinimumWidth(150)
+        self.tezke.setMinimumHeight(150)
+        self.tezke.setMaximumWidth(150)
+        self.tezke.setMaximumHeight(150)
+        self.tezke.clicked.connect(self.tezkeClick)
+
+        self.vlastni = QtGui.QPushButton()
+        self.vlastni.setText("Vlastní")
+        self.vlastni.setFont(pismo)
+        self.vlastni.setMinimumWidth(150)
+        self.vlastni.setMinimumHeight(150)
+        self.vlastni.setMaximumWidth(150)
+        self.vlastni.setMaximumHeight(150)
+        self.vlastni.clicked.connect(self.vlastniClick)
+
+
+        layout.addWidget(obtiznost,0,0,1,3)
+        layout.addWidget(QtGui.QWidget(),1,0)
+        layout.addWidget(QtGui.QWidget(),2,0)
+        layout.addWidget(QtGui.QWidget(),3,0)
+        layout.addWidget(QtGui.QWidget(),4,0)
+        layout.addWidget(self.lehke,5,0)
+        layout.addWidget(self.stredni,5,1)
+        layout.addWidget(self.tezke,5,2)
+        layout.addWidget(self.vlastni,5,3)
+
+class JineMetodyDialog(QtGui.QDialog):
+    def zadatRucne(self):
+        okno.zobrazElementy("zadavani")
+        self.close()
+
+    def generatorClick(self):
+        self.close()
+        dialog = GeneratorDialog3()
+        dialog.exec_()
+
+    def __init__(self):
+        super(JineMetodyDialog, self).__init__()
+
+        self.setWindowTitle("Metody zadávání")
+        self.resize(600,300)
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(25)
+
+        layout = QtGui.QGridLayout(self)
+        obtiznost = QtGui.QLabel("Vyber metodu zadávání:")
+        obtiznost.setFont(pismo)
+
+        self.generator = QtGui.QPushButton()
+        self.generator.setText("Vygenerovat")
+        self.generator.setFont(pismo)
+        self.generator.setMinimumWidth(150)
+        self.generator.setMinimumHeight(150)
+        self.generator.setMaximumWidth(150)
+        self.generator.setMaximumHeight(150)
+        self.generator.clicked.connect(self.generatorClick)
+
+        self.databaze = QtGui.QPushButton()
+        self.databaze.setText("Z databáze")
+        self.databaze.setFont(pismo)
+        self.databaze.setMinimumWidth(150)
+        self.databaze.setMinimumHeight(150)
+        self.databaze.setMaximumWidth(150)
+        self.databaze.setMaximumHeight(150)
+        self.databaze.clicked.connect(todo)
+
+        self.soubor = QtGui.QPushButton()
+        self.soubor.setText("Z obrázku")
+        self.soubor.setFont(pismo)
+        self.soubor.setMinimumWidth(150)
+        self.soubor.setMinimumHeight(150)
+        self.soubor.setMaximumWidth(150)
+        self.soubor.setMaximumHeight(150)
+        self.soubor.clicked.connect(todo)
+
+        self.klavesnice = QtGui.QPushButton()
+        self.klavesnice.setText("Zadat ručně")
+        self.klavesnice.setFont(pismo)
+        self.klavesnice.setMinimumWidth(150)
+        self.klavesnice.setMinimumHeight(150)
+        self.klavesnice.setMaximumWidth(150)
+        self.klavesnice.setMaximumHeight(150)
+        self.klavesnice.clicked.connect(self.zadatRucne)
+
+
+        layout.addWidget(obtiznost,0,0,1,3)
+        layout.addWidget(QtGui.QWidget(),1,0)
+        layout.addWidget(QtGui.QWidget(),2,0)
+        layout.addWidget(QtGui.QWidget(),3,0)
+        layout.addWidget(QtGui.QWidget(),4,0)
+        # layout.addWidget(self.lehke,5,0)
+        layout.addWidget(self.generator,5,1)
+        layout.addWidget(self.databaze,5,2)
+        layout.addWidget(self.soubor,5,3)
+        layout.addWidget(self.klavesnice,5,4)
 
 
 class SuSol(QtGui.QMainWindow):
@@ -2774,6 +2931,10 @@ class SuSol(QtGui.QMainWindow):
         elif pocetReseni == 2:
             self.ukecanejBanner.setText("Sudoku není jednoznačné.")
 
+    def jineMetody(self):
+        dialog = JineMetodyDialog()
+        dialog.exec_()
+
     def tabsZadavani(self):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3008,7 +3169,7 @@ class SuSol(QtGui.QMainWindow):
         self.jinyZpusob = QtGui.QPushButton()
         self.jinyZpusob.setFocusPolicy(QtCore.Qt.NoFocus)
         self.jinyZpusob.setText("&Jiné metody zadávání...")
-        self.jinyZpusob.clicked.connect(self.vzdatSe)
+        self.jinyZpusob.clicked.connect(self.jineMetody)
 
 
         self.poleLabel = QtGui.QLabel("A1")
@@ -3051,7 +3212,7 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def wb4click(self):
-        print("wb4click")
+        todo()
 
     def welcomeScreen(self):
         self.welcomeButton1 = QtGui.QPushButton(self)
@@ -3066,13 +3227,18 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton2.clicked.connect(self.wb2click)
         self.welcomeButton3.clicked.connect(self.wb3click)
         self.welcomeButton4.clicked.connect(self.wb4click)
+        self.welcomeButton1.show()
+        self.welcomeButton2.show()
+        self.welcomeButton3.show()
+        self.welcomeButton4.show()
 
     def zobrazElementy(self,theme):
         self.hideAll()
         self.rezim = theme
 
         if self.rezim == "welcome_screen":
-            pass
+            self.setWindowTitle("SuSol")
+            self.welcomeScreen()
 
         if self.rezim == "reseni":
             self.setWindowTitle("SuSol - Trénink")
@@ -3095,6 +3261,10 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton2.hide()
         self.welcomeButton3.hide()
         self.welcomeButton4.hide()
+
+    def domu(self):
+        self.zobrazElementy("welcome_screen")
+        self.update()
 
 
 
@@ -3276,6 +3446,8 @@ class SuSol(QtGui.QMainWindow):
 
         mainMenu1 = self.menuBar().addMenu("&SuSol")
         mainMenu2 = self.menuBar().addMenu("S&udoku")
+        mainMenu3 = self.menuBar().addMenu("&Přejít")
+
         for i in QtGui.QStyleFactory.keys():
             print(i)
 
@@ -3283,6 +3455,7 @@ class SuSol(QtGui.QMainWindow):
         mainMenu1.addAction("O programu")
         mainMenu1.addSeparator()
         mainMenu1.addAction("Konec\tAlt+F4",self.quit)
+
         mainMenu2.addAction("Nové sudoku\tCtrl+N")
         mainMenu2.addAction("Načíst sudoku\tCtrl+O")
         mainMenu2.addAction("Uložit sudoku\tCtrl+S")
@@ -3291,8 +3464,12 @@ class SuSol(QtGui.QMainWindow):
         mainMenu2.addAction("Soutěžní režim")
         mainMenu2.addAction("Výsledky")
 
+        mainMenu3.addAction("Domů\tHome", self.domu)
+
+
         mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
         mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
+        mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self.ukecanejBanner = QtGui.QLabel(self)
         self.ukecanejBanner.move(15,vyska-60)

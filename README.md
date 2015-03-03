@@ -20,6 +20,7 @@ DALŠÍ TODO (priorita nahoře nejdůležitější):
 - přepsat generátor
 - vyrobit programátorskou dokumentaci solveru a generátoru
 - napsat balíček do AUR pro archlinux (případně i další distribuce)
+- load z obrázku a implementace dalších strategií
 
 
 

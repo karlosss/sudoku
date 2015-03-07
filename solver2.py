@@ -88,7 +88,7 @@ def generujKandidaty(kandidati,reseni): #vygeneruje soubor kandidatu pro kazde p
 
 
 
-def lastPossibility(kandidati,reseni,logovatPostup=False): #pokud je v policku pouze jeden kandidat, tak je toto cislo oznaceno jako reseni pro dane policko
+def nakedSingle(kandidati,reseni,logovatPostup=False): #pokud je v policku pouze jeden kandidat, tak je toto cislo oznaceno jako reseni pro dane policko
 
     postup = []
 
@@ -109,7 +109,7 @@ def lastPossibility(kandidati,reseni,logovatPostup=False): #pokud je v policku p
     else:
         return [kandidati,reseni]
 
-def uniqueCandInGroup(kandidati,reseni,logovatPostup=False): #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni; zaroven umi detekovat neresitelnost v pripade, ze v nejakem setu nejake cislo uplne chybi
+def hiddenSingle(kandidati,reseni,logovatPostup=False): #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni; zaroven umi detekovat neresitelnost v pripade, ze v nejakem setu nejake cislo uplne chybi
 
     postup = []
 
@@ -264,14 +264,14 @@ def bruteForce(reseni,pocetReseni):
 
                 sudokuBef = deepcopy(reseni)
                 candBef = deepcopy(kandidati)
-                vysl = lastPossibility(kandidati,reseni)
+                vysl = nakedSingle(kandidati,reseni)
                 kandidati = vysl[0]
                 reseni = vysl[1]
                 kandidati = generujKandidaty(kandidati,reseni)
 
             sudokuBef = deepcopy(reseni)
             candBef = deepcopy(kandidati)
-            vysl = uniqueCandInGroup(kandidati,reseni)
+            vysl = hiddenSingle(kandidati,reseni)
             kandidati = vysl[0]
             reseni = vysl[1]
             nemaReseni = vysl[2]
@@ -311,14 +311,14 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
 
             sudokuBef = deepcopy(reseni)
             candBef = deepcopy(kandidati)
-            vysl = lastPossibility(kandidati,reseni)
+            vysl = nakedSingle(kandidati,reseni)
             kandidati = vysl[0]
             reseni = vysl[1]
             kandidati = generujKandidaty(kandidati,reseni)
 
         sudokuBef = deepcopy(reseni)
         candBef = deepcopy(kandidati)
-        vysl = uniqueCandInGroup(kandidati,reseni)
+        vysl = hiddenSingle(kandidati,reseni)
         kandidati = vysl[0]
         reseni = vysl[1]
         nemaReseni = vysl[2]
@@ -334,7 +334,7 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
 
     return [reseni,(time()-cas)*1000]
 
-def solveHuman(zad):
+def solveHuman(zad,naked_single=True,hidden_single=True):
     #################POVINNA HLAVICKA######################
     cas = time()
     zadani = deepcopy(zad)
@@ -354,27 +354,28 @@ def solveHuman(zad):
 
     while sudokuBef != reseni or candBef != kandidati:
         while sudokuBef != reseni or candBef != kandidati:
+            if naked_single:
+                sudokuBef = deepcopy(reseni)
+                candBef = deepcopy(kandidati)
+                vysl = nakedSingle(kandidati,reseni,logovatPostup=True)
+                kandidati = vysl[0]
+                reseni = vysl[1]
+                if vysl[2] != []:
+                    postup.append(vysl[2])
+                    return [postup,(time()-cas),True,True]
+                kandidati = generujKandidaty(kandidati,reseni)
 
+        if hidden_single:
             sudokuBef = deepcopy(reseni)
             candBef = deepcopy(kandidati)
-            vysl = lastPossibility(kandidati,reseni,logovatPostup=True)
+            vysl = hiddenSingle(kandidati,reseni,logovatPostup=True)
             kandidati = vysl[0]
             reseni = vysl[1]
-            if vysl[2] != []:
-                postup.append(vysl[2])
+            nemaReseni = vysl[2]
+            if vysl[3] != []:
+                postup.append(vysl[3])
                 return [postup,(time()-cas),True,True]
             kandidati = generujKandidaty(kandidati,reseni)
-
-        sudokuBef = deepcopy(reseni)
-        candBef = deepcopy(kandidati)
-        vysl = uniqueCandInGroup(kandidati,reseni,logovatPostup=True)
-        kandidati = vysl[0]
-        reseni = vysl[1]
-        nemaReseni = vysl[2]
-        if vysl[3] != []:
-            postup.append(vysl[3])
-            return [postup,(time()-cas),True,True]
-        kandidati = generujKandidaty(kandidati,reseni)
 
         if nemaReseni:
             return [[],(time()-cas)*1000,False,True]

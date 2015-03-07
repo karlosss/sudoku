@@ -22,6 +22,24 @@ def str2arr(string):
         arr.append(int(i))
     return arr
 
+def sudoku2string(x):
+    s = ""
+    for i in x:
+        for j in i:
+            s = s+str(j)
+
+    return s
+
+def string2sudoku(x):
+    sd = []
+    for i in range(0,9,1):
+        sd.append([])
+        for j in range(0,9,1):
+            sd[i].append(x[9*i+j])
+
+    return sd
+
+
 def num2alpha(n):
     if n == 0:
         return "A"
@@ -107,4 +125,16 @@ def dekodovatCtverec(n):
         return "levém prostředním"
     elif n == 8:
         return "levém dolním"
+
+def DB2list(x):
+    output = []
+    for i in x:
+        output.append(i[0])
+    return output
+
+def wideDB2list(x):
+    output = []
+    for i in x:
+        output.append(i)
+    return output
 

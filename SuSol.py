@@ -2,15 +2,238 @@
 
 from __future__ import print_function, unicode_literals
 from PyQt4 import QtGui, QtCore
-from misc import num2alpha, arr2str, alpha2num, hms, dekodovatCtverec
+from misc import num2alpha, arr2str, alpha2num, hms, dekodovatCtverec, DB2list, string2sudoku, sudoku2string, wideDB2list
 from copy import deepcopy
-from time import time
+from time import time, asctime
+from sqlite3 import connect
 import sys
 import solver2
 import generator
 
+db = connect("data.db")
+uzivatel = ""
+
 def todo():
     QtGui.QMessageBox.critical(None,"TODO","TODO")
+
+class LoadFromDBDialog(QtGui.QDialog):
+
+    def paintEvent(self, QPaintEvent):
+        pass
+
+    def __init__(self):
+        super(LoadFromDBDialog,self).__init__()
+
+        seznam_z_db = wideDB2list(db.execute("SELECT datum,uzivatel,identifikator,puvod FROM sudoku_zadani"))
+        db.commit()
+        sudoku_z_db = DB2list(db.execute("SELECT zadani FROM sudoku_zadani"))
+
+        self.resize(500,500)
+        self.setWindowTitle("Načíst z databáze")
+
+        self.tabulka = QtGui.QTableWidget(self)
+        self.tabulka.setMinimumWidth(420)
+        self.tabulka.setColumnCount(4)
+        self.tabulka.setRowCount(len(seznam_z_db))
+        self.tabulka.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tabulka.setHorizontalHeaderLabels(["Datum","Uživatel","Identifikátor","Původ"])
+
+        for i in range(0,len(seznam_z_db),1):
+            for j in range(0,4,1):
+                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(seznam_z_db[i][j]))
+
+
+class DBInsertDialog(QtGui.QDialog):
+
+    def acceptDialog(self):
+        self.zabit = True
+
+        identifikator = str(self.entry.text())
+        db.execute("INSERT INTO sudoku_zadani VALUES('"+str(identifikator)+"','"+str(okno.uzivatel)+"','"+"zadat rucne"+"','"+str(sudoku2string(okno.zadani))+"','"+str(asctime())+"')")
+
+        self.close()
+
+    def closeEvent(self, QCloseEvent):
+        if self.zabit:
+            self.close()
+        else:
+            QCloseEvent.ignore()
+
+    def keyPressEvent(self, QKeyEvent):
+        pass
+
+    def __init__(self):
+        super(DBInsertDialog,self).__init__()
+        self.zabit = False
+
+        self.setWindowTitle("Uložit do databáze")
+        self.resize(300,300)
+
+        self.label = QtGui.QLabel(self)
+        self.label.setText("Identifikátor:")
+        self.label.move(50,50)
+
+        self.entry = QtGui.QLineEdit(self)
+        self.entry.setMinimumWidth(200)
+        self.entry.move(50,100)
+        self.entry.setFocus()
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.move(115,260)
+
+class UserSelectDialog(QtGui.QDialog):
+
+    def acceptDialog(self):
+        global uzivatel
+        self.zabit = False
+
+        if self.rb1.isChecked():
+            uzivatel = str(self.entry.text())
+            seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
+            if uzivatel in seznam_v_db:
+                QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
+                return False
+            db.execute("INSERT INTO uzivatele VALUES ('"+uzivatel+"')")
+        elif self.rb2.isChecked():
+            uzivatel = self.combobox.currentText()
+        db.commit()
+        self.close()
+
+    def rejectDialog(self):
+        exit()
+
+    def closeEvent(self, QCloseEvent):
+        if self.zabit:
+            exit()
+
+    def keyPressEvent(self, QKeyEvent):
+        pass
+
+
+    def click2(self):
+        self.entry.setDisabled(True)
+        self.combobox.setDisabled(False)
+        self.rb1.setFocus()
+        self.combobox.setFocus()
+
+
+    def click1(self):
+        self.entry.setDisabled(False)
+        self.combobox.setDisabled(True)
+        self.rb2.setFocus()
+        self.entry.setFocus()
+
+    def __init__(self):
+        super(UserSelectDialog,self).__init__()
+
+        self.zabit = True
+
+        self.resize(300,300)
+        self.setWindowTitle("SuSol - Zvolit uživatele")
+
+        self.rb1 = QtGui.QRadioButton(self)
+        self.rb1.setText("Založit nového")
+        self.rb1.move(0,150)
+        self.rb1.clicked.connect(self.click1)
+
+        self.rb2 = QtGui.QRadioButton(self)
+        self.rb2.setText("Vybrat existujícího")
+        self.rb2.setChecked(True)
+        self.rb2.clicked.connect(self.click2)
+
+        self.combobox = QtGui.QComboBox(self)
+        seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
+        for i in range(0,len(seznam_v_db),1):
+            self.combobox.addItem(seznam_v_db[i])
+        self.combobox.move(50,50)
+        self.combobox.setMinimumWidth(200)
+
+        self.entry = QtGui.QLineEdit(self)
+        self.entry.move(50,200)
+        self.entry.setMinimumWidth(200)
+        self.entry.setDisabled(True)
+
+        self.combobox.setFocus()
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.move(115,260)
+
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+
+
+class UserSelectDialog2(QtGui.QDialog):
+
+    def acceptDialog(self):
+        self.zabit = True
+        if self.rb1.isChecked():
+            okno.uzivatel = str(self.entry.text())
+            seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
+            if okno.uzivatel in seznam_v_db:
+                QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
+                return False
+            db.execute("INSERT INTO uzivatele VALUES ('"+okno.uzivatel+"')")
+        elif self.rb2.isChecked():
+            okno.uzivatel = self.combobox.currentText()
+        okno.mainMenu4.setTitle("&Uživatel: "+okno.uzivatel)
+        db.commit()
+        self.close()
+
+    def rejectDialog(self):
+        self.close()
+
+    def click2(self):
+        self.entry.setDisabled(True)
+        self.combobox.setDisabled(False)
+        self.rb1.setFocus()
+        self.combobox.setFocus()
+
+
+    def click1(self):
+        self.entry.setDisabled(False)
+        self.combobox.setDisabled(True)
+        self.rb2.setFocus()
+        self.entry.setFocus()
+
+    def __init__(self):
+        super(UserSelectDialog2,self).__init__()
+
+        self.resize(300,300)
+        self.setWindowTitle("Zvolit uživatele")
+
+        self.rb1 = QtGui.QRadioButton(self)
+        self.rb1.setText("Založit nového")
+        self.rb1.move(0,150)
+        self.rb1.clicked.connect(self.click1)
+
+        self.rb2 = QtGui.QRadioButton(self)
+        self.rb2.setText("Vybrat existujícího")
+        self.rb2.setChecked(True)
+        self.rb2.clicked.connect(self.click2)
+
+        self.combobox = QtGui.QComboBox(self)
+        for i in range(0,9,1):
+            self.combobox.addItem(str(i*10))
+        self.combobox.move(50,50)
+        self.combobox.setMinimumWidth(200)
+
+        self.entry = QtGui.QLineEdit(self)
+        self.entry.move(50,200)
+        self.entry.setMinimumWidth(200)
+        self.entry.setDisabled(True)
+
+        self.combobox.setFocus()
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.move(115,260)
+
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+
+
+
+
 
 class ShortNoteDialog(QtGui.QDialog):
 
@@ -675,7 +898,7 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zobrazElementy("reseni")
 
     def stredniClick(self):
-        okno.zadani = generator.generate()
+        okno.zadani = generator.generate()[0]
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("reseni")
@@ -922,6 +1145,11 @@ class JineMetodyDialog(QtGui.QDialog):
         okno.zobrazElementy("zadavani")
         self.close()
 
+    def databazeClick(self):
+        self.close()
+        dialog = LoadFromDBDialog()
+        dialog.exec_()
+
     def generatorClick(self):
         self.close()
         dialog = GeneratorDialog3()
@@ -956,7 +1184,7 @@ class JineMetodyDialog(QtGui.QDialog):
         self.databaze.setMinimumHeight(150)
         self.databaze.setMaximumWidth(150)
         self.databaze.setMaximumHeight(150)
-        self.databaze.clicked.connect(todo)
+        self.databaze.clicked.connect(self.databazeClick)
 
         self.soubor = QtGui.QPushButton()
         self.soubor.setText("Z obrázku")
@@ -987,7 +1215,6 @@ class JineMetodyDialog(QtGui.QDialog):
         layout.addWidget(self.databaze,5,2)
         layout.addWidget(self.soubor,5,3)
         layout.addWidget(self.klavesnice,5,4)
-
 
 class SuSol(QtGui.QMainWindow):
 
@@ -2199,8 +2426,10 @@ class SuSol(QtGui.QMainWindow):
                 self.indikace3[kroky[0][0][1][0]][kroky[0][0][1][1]] = 1
 
     def vzdatSe(self):
-        print("vzdat se")
-        #TODO
+        todo()
+
+    def ulozitClick(self):
+        todo()
 
     def tabsReseni(self):
         self.tabs = QtGui.QTabWidget(self)
@@ -2424,10 +2653,10 @@ class SuSol(QtGui.QMainWindow):
         self.odstranitBarvu.setText("&Odstranit barvu...")
         self.odstranitBarvu.clicked.connect(self.odstranitBarvuClick)
 
-        self.nastaveniBarev = QtGui.QPushButton()
-        self.nastaveniBarev.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nastaveniBarev.setText("&Nastavení barev...")
-        self.nastaveniBarev.clicked.connect(self.nastaveniBarevClick)
+        self.ulozitBtn = QtGui.QPushButton()
+        self.ulozitBtn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.ulozitBtn.setText("&Uložit")
+        self.ulozitBtn.clicked.connect(self.ulozitClick)
 
         self.zabarvitDleKandidatu = QtGui.QPushButton()
         self.zabarvitDleKandidatu.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -2525,7 +2754,7 @@ class SuSol(QtGui.QMainWindow):
         vBoxlayout.addWidget(self.longNoteTB,7,4,6,7)
         vBoxlayout.addWidget(self.odstranitBarvu,14,0,1,11)
         vBoxlayout.addWidget(self.zabarvitDleKandidatu,13,0,1,11)
-        vBoxlayout.addWidget(self.nastaveniBarev,15,0,1,11)
+        vBoxlayout.addWidget(self.ulozitBtn,15,0,1,11)
         vBoxlayout.addWidget(self.restartovatBtn,16,0,1,11)
         self.tab1.setLayout(vBoxlayout)
 
@@ -2919,6 +3148,17 @@ class SuSol(QtGui.QMainWindow):
             if dotaz == QtGui.QMessageBox.Cancel:
                 return False
 
+        sudoku = sudoku2string(self.zadani)
+        sudoku_v_db = DB2list(db.execute("SELECT zadani FROM sudoku_zadani"))
+        if sudoku in sudoku_v_db:
+            pass
+        else:
+            dialog = DBInsertDialog()
+            dialog.exec_()
+        db.commit()
+
+
+
         self.zadaniBackup = deepcopy(self.zadani)
         self.zobrazElementy("reseni")
 
@@ -3266,6 +3506,9 @@ class SuSol(QtGui.QMainWindow):
         self.zobrazElementy("welcome_screen")
         self.update()
 
+    def zmenitUzivatele(self):
+        dialog = UserSelectDialog2()
+        dialog.exec_()
 
 
     def __init__(self):
@@ -3286,6 +3529,10 @@ class SuSol(QtGui.QMainWindow):
 
         self.zobrazitSouradnice = True
         #############CONFIG#######################################################
+
+        self.uzivatel = ""
+        dialog = UserSelectDialog()
+        dialog.exec_()
 
         self.curX = 0
         self.curY = 0
@@ -3444,32 +3691,38 @@ class SuSol(QtGui.QMainWindow):
         sirka = QtGui.QDesktopWidget().screenGeometry().width()
         self.resize(sirka,vyska)
 
-        mainMenu1 = self.menuBar().addMenu("&SuSol")
-        mainMenu2 = self.menuBar().addMenu("S&udoku")
-        mainMenu3 = self.menuBar().addMenu("&Přejít")
+        self.mainMenu1 = self.menuBar().addMenu("&SuSol")
+        self.mainMenu2 = self.menuBar().addMenu("Su&doku")
+        self.mainMenu3 = self.menuBar().addMenu("&Přejít")
+        self.mainMenu4 = self.menuBar().addMenu("&Uživatel:")
 
         for i in QtGui.QStyleFactory.keys():
             print(i)
 
-        mainMenu1.addAction("Pomoc\tF1")
-        mainMenu1.addAction("O programu")
-        mainMenu1.addSeparator()
-        mainMenu1.addAction("Konec\tAlt+F4",self.quit)
+        self.mainMenu1.addAction("Pomoc\tF1")
+        self.mainMenu1.addAction("O programu")
+        self.mainMenu1.addSeparator()
+        self.mainMenu1.addAction("Konec\tAlt+F4",self.quit)
 
-        mainMenu2.addAction("Nové sudoku\tCtrl+N")
-        mainMenu2.addAction("Načíst sudoku\tCtrl+O")
-        mainMenu2.addAction("Uložit sudoku\tCtrl+S")
-        mainMenu2.addAction("Uložit sudoku jako\tF12")
-        mainMenu2.addSeparator()
-        mainMenu2.addAction("Soutěžní režim")
-        mainMenu2.addAction("Výsledky")
+        self.mainMenu2.addAction("Nové sudoku\tCtrl+N")
+        self.mainMenu2.addAction("Načíst sudoku\tCtrl+O")
+        self.mainMenu2.addAction("Uložit sudoku\tCtrl+S")
+        self.mainMenu2.addAction("Uložit sudoku jako\tF12")
+        self.mainMenu2.addSeparator()
+        self.mainMenu2.addAction("Soutěžní režim")
+        self.mainMenu2.addAction("Výsledky")
 
-        mainMenu3.addAction("Domů\tHome", self.domu)
+        self.mainMenu3.addAction("Domů\tHome", self.domu)
+
+        self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
+        self.mainMenu4.addSeparator()
+        self.mainMenu4.addAction("Moje sudoku")
+        self.mainMenu4.addAction("Moje nastavení")
 
 
-        mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
-        mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
-        mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self.ukecanejBanner = QtGui.QLabel(self)
         self.ukecanejBanner.move(15,vyska-60)
@@ -3479,6 +3732,9 @@ class SuSol(QtGui.QMainWindow):
 
         self.welcomeScreen()
         self.show()
+
+        self.uzivatel = uzivatel
+        self.mainMenu4.setTitle("&Uživatel: "+uzivatel)
 
 
 app = QtGui.QApplication(sys.argv)

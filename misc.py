@@ -35,7 +35,7 @@ def string2sudoku(x):
     for i in range(0,9,1):
         sd.append([])
         for j in range(0,9,1):
-            sd[i].append(x[9*i+j])
+            sd[i].append(int(x[9*i+j]))
 
     return sd
 

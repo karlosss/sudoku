@@ -4,7 +4,7 @@ from __future__ import print_function, unicode_literals
 from PyQt4 import QtGui, QtCore
 from misc import num2alpha, arr2str, alpha2num, hms, dekodovatCtverec, DB2list, string2sudoku, sudoku2string, wideDB2list
 from copy import deepcopy
-from time import time, asctime
+from time import time, localtime, strftime
 from sqlite3 import connect
 import sys
 import solver2
@@ -19,52 +19,125 @@ def todo():
 class LoadFromDBDialog(QtGui.QDialog):
 
     def paintEvent(self, QPaintEvent):
-        pass
+        painter = QtGui.QPainter(self)
+
+        painter.setPen(QtGui.QColor("#000000"))
+        painter.setBrush(QtGui.QColor("#ffffff"))
+
+        painter.drawRect(130,220,250,250)
+        for i in range(1,9,1):
+            painter.drawLine(130,220+i*250/9,380,220+i*250/9)
+            painter.drawLine(130+i*250/9,220,130+i*250/9,470)
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(20)
+        painter.setFont(pismo)
+
+        for i in range(0,9,1):
+            for j in range(0,9,1):
+                if self.aktivniSudoku[j][i] != 0:
+                    painter.drawText(130+(i+0.4)*250/9,220+(j+0.85)*250/9,str(self.aktivniSudoku[j][i]))
+
+
+        painter.setBrush(QtGui.QColor("#000000"))
+        for i in range(0,4,1):
+            painter.drawRect(130,220+250*i/3,250,2)
+            painter.drawRect(130+250*i/3,220,2,250)
+
+
+        painter.end()
+
+    def acceptDialog(self):
+        self.close()
+        okno.zadani = deepcopy(self.aktivniSudoku)
+
+    def rejectDialog(self):
+        self.close()
+
+    def vybranRadek(self):
+        try:
+            cisloRadku = self.tabulka.currentItem().row()
+            aktivniID = self.tabulka.item(cisloRadku,0).text()
+        except AttributeError:
+            aktivniID = 1
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id="+str(aktivniID)))[0])
+
+        for i in range(0,9,1):
+            self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
+
+        self.update()
 
     def __init__(self):
         super(LoadFromDBDialog,self).__init__()
 
-        seznam_z_db = wideDB2list(db.execute("SELECT datum,uzivatel,identifikator,puvod FROM sudoku_zadani"))
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator,puvod FROM sudoku_zadani"))
         db.commit()
-        sudoku_z_db = DB2list(db.execute("SELECT zadani FROM sudoku_zadani"))
+
+        self.aktivniSudoku = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+        ]
 
         self.resize(500,500)
+        self.setFixedSize(500,500)
         self.setWindowTitle("Načíst z databáze")
 
         self.tabulka = QtGui.QTableWidget(self)
-        self.tabulka.setMinimumWidth(420)
-        self.tabulka.setColumnCount(4)
+        self.tabulka.setMinimumWidth(500)
+        self.tabulka.setFixedHeight(200)
+        self.tabulka.setColumnCount(5)
+        self.tabulka.setColumnWidth(0,92)
+        self.tabulka.setColumnWidth(1,92)
+        self.tabulka.setColumnWidth(2,92)
+        self.tabulka.setColumnWidth(3,92)
+        self.tabulka.setColumnWidth(4,92)
         self.tabulka.setRowCount(len(seznam_z_db))
         self.tabulka.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tabulka.setHorizontalHeaderLabels(["Datum","Uživatel","Identifikátor","Původ"])
+        self.tabulka.setHorizontalHeaderLabels(["#","Datum","Uživatel","Identifikátor","Původ"])
+        self.tabulka.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tabulka.setSortingEnabled(True)
+        self.tabulka.itemSelectionChanged.connect(self.vybranRadek)
+        self.tabulka.cellDoubleClicked.connect(self.acceptDialog)
+        self.tabulka.selectRow(0)
 
         for i in range(0,len(seznam_z_db),1):
-            for j in range(0,4,1):
-                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(seznam_z_db[i][j]))
+            for j in range(0,5,1):
+                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(str(seznam_z_db[i][j])))
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(330,475)
+
 
 
 class DBInsertDialog(QtGui.QDialog):
 
     def acceptDialog(self):
-        self.zabit = True
-
         identifikator = str(self.entry.text())
-        db.execute("INSERT INTO sudoku_zadani VALUES('"+str(identifikator)+"','"+str(okno.uzivatel)+"','"+"zadat rucne"+"','"+str(sudoku2string(okno.zadani))+"','"+str(asctime())+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+str(identifikator)+"','"+str(okno.uzivatel)+"','"+"zadat rucne"+"','"+str(sudoku2string(okno.zadani))+"','"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
 
         self.close()
 
-    def closeEvent(self, QCloseEvent):
-        if self.zabit:
-            self.close()
-        else:
-            QCloseEvent.ignore()
+    def rejectDialog(self):
+        self.close()
+        okno.reject1 = True
 
     def keyPressEvent(self, QKeyEvent):
-        pass
+        if QKeyEvent.key() == QtCore.Qt.Key_Return:
+            self.acceptDialog()
+        elif QKeyEvent.key() == QtCore.Qt.Key_Escape:
+            self.rejectDialog()
 
     def __init__(self):
         super(DBInsertDialog,self).__init__()
-        self.zabit = False
 
         self.setWindowTitle("Uložit do databáze")
         self.resize(300,300)
@@ -78,9 +151,15 @@ class DBInsertDialog(QtGui.QDialog):
         self.entry.move(50,100)
         self.entry.setFocus()
 
-        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok,parent=self)
+        self.label2 =QtGui.QLabel(self)
+        self.label2.setText("Hint: Toto sudoku se nenachází v databázi. Pro pokračování musí být uloženo, aby k němu potom bylo možno v budoucnosti přistupovat.")
+        self.label2.setWordWrap(True)
+        self.label2.move(50,150)
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
         tlacitka.accepted.connect(self.acceptDialog)
-        tlacitka.move(115,260)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(60,260)
 
 class UserSelectDialog(QtGui.QDialog):
 
@@ -213,8 +292,9 @@ class UserSelectDialog2(QtGui.QDialog):
         self.rb2.clicked.connect(self.click2)
 
         self.combobox = QtGui.QComboBox(self)
-        for i in range(0,9,1):
-            self.combobox.addItem(str(i*10))
+        seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
+        for i in range(0,len(seznam_v_db),1):
+            self.combobox.addItem(seznam_v_db[i])
         self.combobox.move(50,50)
         self.combobox.setMinimumWidth(200)
 
@@ -1330,39 +1410,40 @@ class SuSol(QtGui.QMainWindow):
                     painter.setBrush(QtGui.QColor("#ffffff"))
                     painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
 
-                    pocetBarev = 0
-                    pozice = []
-                    for k in range(0,9,1):
-                        if self.barvy[j][i][k]*self.zobrazitBarvu[k] == 1:
-                            pocetBarev = pocetBarev + 1
-                            pozice.append(k)
+                    if self.rezim not in ("zadavani"):
+                        pocetBarev = 0
+                        pozice = []
+                        for k in range(0,9,1):
+                            if self.barvy[j][i][k]*self.zobrazitBarvu[k] == 1:
+                                pocetBarev = pocetBarev + 1
+                                pozice.append(k)
 
-                    for k in range(0,pocetBarev,1):
-                        try:
-                            sirka = squareSize/pocetBarev
-                        except ZeroDivisionError:
-                            break
+                        for k in range(0,pocetBarev,1):
+                            try:
+                                sirka = squareSize/pocetBarev
+                            except ZeroDivisionError:
+                                break
 
-                        addOn = 0
-                        if k == pocetBarev-1:
-                            addOn = squareSize-(k+1)*sirka
+                            addOn = 0
+                            if k == pocetBarev-1:
+                                addOn = squareSize-(k+1)*sirka
 
-                        painter.setBrush(QtGui.QColor(self.barvyBarev[pozice[k]]))
+                            painter.setBrush(QtGui.QColor(self.barvyBarev[pozice[k]]))
 
-                        painter.drawRect(i*squareSize+Xpos+k*sirka,j*squareSize+Ypos,sirka+addOn,squareSize)
+                            painter.drawRect(i*squareSize+Xpos+k*sirka,j*squareSize+Ypos,sirka+addOn,squareSize)
 
 
-                    if self.chyby[j][i] == 1:
-                        painter.setBrush(QtGui.QColor(self.barvaChyby))
-                        painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
+                        if self.chyby[j][i] == 1:
+                            painter.setBrush(QtGui.QColor(self.barvaChyby))
+                            painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
 
-                    if self.indikace1[j][i] == 1:
-                        painter.setBrush(QtGui.QColor("#888833"))
-                        painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
+                        if self.indikace1[j][i] == 1:
+                            painter.setBrush(QtGui.QColor("#888833"))
+                            painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
 
-                    if self.indikace3[j][i] == 1:
-                        painter.setBrush(QtGui.QColor("#00aa00"))
-                        painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
+                        if self.indikace3[j][i] == 1:
+                            painter.setBrush(QtGui.QColor("#00aa00"))
+                            painter.drawRect(i*squareSize+Xpos,j*squareSize+Ypos,squareSize,squareSize)
 
 
                     if self.curX == i and self.curY == j and self.candMode == False:
@@ -1432,7 +1513,7 @@ class SuSol(QtGui.QMainWindow):
                         y = j*squareSize+Ypos+0.9*squareSize
 
                         painter.drawText(x,y,str(self.zadani[j][i]))
-                    if self.reseni[i][j] != 0 and self.zadani[i][j] == 0:
+                    if self.reseni[i][j] != 0 and self.zadani[i][j] == 0 and self.rezim not in ("zadavani"):
                         painter.setFont(pismo2)
                         painter.setPen(QtGui.QColor("#0000ff"))
 
@@ -1441,7 +1522,7 @@ class SuSol(QtGui.QMainWindow):
 
                         painter.drawText(x,y,str(self.reseni[i][j]))
 
-                    if self.poznamky[i][j] != "":
+                    if self.poznamky[i][j] != "" and self.rezim not in ("zadavani"):
                         x = j*squareSize+Xpos+0.8*squareSize
                         y = i*squareSize+Ypos+0.8*squareSize
 
@@ -1457,6 +1538,9 @@ class SuSol(QtGui.QMainWindow):
                     y = i*squareSize+Ypos+0.9*squareSize
 
                     painter.drawText(x,y,num2alpha(i)+str(j+1))
+
+                    if self.rezim in ("zadavani"):
+                        continue
 
                     painter.setPen(QtGui.QColor("#000000"))
                     painter.setFont(pismo4)
@@ -3140,6 +3224,7 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def hotovo(self):
+        self.reject1 = False
         if len(solver2.solvePC(self.zadani,2)[0]) == 0:
             QtGui.QMessageBox.critical(None,"Chyba","Sudoku nemá řešení.")
             return False
@@ -3157,6 +3242,8 @@ class SuSol(QtGui.QMainWindow):
             dialog.exec_()
         db.commit()
 
+        if self.reject1:
+            return False
 
 
         self.zadaniBackup = deepcopy(self.zadani)
@@ -3490,6 +3577,7 @@ class SuSol(QtGui.QMainWindow):
 
         if self.rezim == "zadavani":
             self.setWindowTitle("SuSol - Zadávání")
+            self.candMode = False
             self.tabsZadavani()
 
 
@@ -3685,7 +3773,7 @@ class SuSol(QtGui.QMainWindow):
             [[],[],[],[],[],[],[],[],[]],
             [[],[],[],[],[],[],[],[],[]]]
 
-        QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("Windows"))
+        #QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("Windows"))
         self.setWindowTitle("SuSol")
         vyska = QtGui.QDesktopWidget().screenGeometry().height()
         sirka = QtGui.QDesktopWidget().screenGeometry().width()
@@ -3716,8 +3804,8 @@ class SuSol(QtGui.QMainWindow):
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
-        self.mainMenu4.addAction("Moje sudoku")
-        self.mainMenu4.addAction("Moje nastavení")
+        self.mainMenu4.addAction("Moje sudoku...")
+        self.mainMenu4.addAction("Moje nastavení...")
 
 
         self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)

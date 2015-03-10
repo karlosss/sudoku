@@ -19,8 +19,8 @@ import time
 # #
 # # ]
 #
-# zadani = [
-#     [1,2,3,4,5,6,7,8,0],
+# sudoku = [
+#     [0,0,0,0,0,0,0,0,0],
 #     [0,0,0,0,0,0,0,0,0],
 #     [0,0,0,0,0,0,0,0,0],
 #     [0,0,0,0,0,0,0,0,0],
@@ -30,12 +30,6 @@ import time
 #     [0,0,0,0,0,0,0,0,0],
 #     [0,0,0,0,0,0,0,0,0]
 #     ]
-#
-# reseni = solver.solve(zadani, mode=1)
-#
-# for i in reseni:
-#     for j in i:
-#         print(j)
 
 sudoku = [
     [0,0,5,3,0,0,0,0,0],
@@ -75,5 +69,9 @@ sudoku = [
 
 
 start = time.time()
-solver2.solvePC(sudoku)
+reseni = solver2.solvePC(sudoku,hidden_singleBF=False)
 print time.time()-start
+
+for i in reseni[0]:
+    print(i)
+

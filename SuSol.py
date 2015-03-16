@@ -2,7 +2,7 @@
 
 from __future__ import print_function, unicode_literals
 from PyQt4 import QtGui, QtCore
-from misc import num2alpha, arr2str, alpha2num, hms, dekodovatCtverec, DB2list, string2sudoku, sudoku2string, wideDB2list
+from misc import *
 from copy import deepcopy
 from time import time, localtime, strftime
 from sqlite3 import connect
@@ -109,7 +109,165 @@ class LoadFromDBDialog(QtGui.QDialog):
 
         for i in range(0,len(seznam_z_db),1):
             for j in range(0,5,1):
-                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(str(seznam_z_db[i][j])))
+                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(unicode(seznam_z_db[i][j])))
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(330,475)
+
+class LoadFromDBDialog2(QtGui.QDialog):
+
+    def paintEvent(self, QPaintEvent):
+        painter = QtGui.QPainter(self)
+
+        painter.setPen(QtGui.QColor("#000000"))
+        painter.setBrush(QtGui.QColor("#ffffff"))
+
+        painter.drawRect(130,220,250,250)
+        for i in range(1,9,1):
+            painter.drawLine(130,220+i*250/9,380,220+i*250/9)
+            painter.drawLine(130+i*250/9,220,130+i*250/9,470)
+
+        pismo = QtGui.QFont("Arial")
+        pismo.setPixelSize(20)
+        painter.setFont(pismo)
+
+        for i in range(0,9,1):
+            for j in range(0,9,1):
+                if self.aktivniSudoku[j][i] != 0:
+                    painter.setPen(QtGui.QColor("#000000"))
+                    painter.drawText(130+(i+0.4)*250/9,220+(j+0.85)*250/9,str(self.aktivniSudoku[j][i]))
+                if self.predtimDoplneno[j][i] != 0:
+                    painter.setPen(QtGui.QColor("#0000ff"))
+                    painter.drawText(130+(i+0.4)*250/9,220+(j+0.85)*250/9,str(self.predtimDoplneno[j][i]))
+
+        painter.setPen(QtGui.QColor("#000000"))
+
+
+        painter.setBrush(QtGui.QColor("#000000"))
+        for i in range(0,4,1):
+            painter.drawRect(130,220+250*i/3,250,2)
+            painter.drawRect(130+250*i/3,220,2,250)
+
+
+        painter.end()
+
+    def acceptDialog(self):
+        self.close()
+        try:
+            cisloRadku = self.tabulka.currentItem().row()
+            aktivniID = self.tabulka.item(cisloRadku,0).text()
+        except AttributeError:
+            aktivniID = 1
+
+        load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0]
+
+        okno.zadani = string2sudoku(load[0])
+        okno.reseni = string2sudoku(load[1])
+        okno.kandidati = string2cand(load[2])
+        okno.barvy = string2cand(load[3])
+        okno.akronymy = string2note(load[4])
+        okno.poznamky = string2note(load[5])
+        okno.time = string2time(load[6])
+        okno.zobrazElementy("reseni")
+
+    def rejectDialog(self):
+        self.close()
+
+    def vybranRadek(self):
+        try:
+            cisloRadku = self.tabulka.currentItem().row()
+            aktivniID = self.tabulka.item(cisloRadku,0).text()
+        except AttributeError:
+            aktivniID = 1
+
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
+        reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
+
+        for i in range(0,9,1):
+            self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
+            self.predtimDoplneno[i] = deepcopy(reseni_z_db[i])
+
+        self.update()
+
+    def __init__(self):
+        super(LoadFromDBDialog2,self).__init__()
+
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        db.commit()
+
+        pole = []
+
+        for i in range(0,len(seznam_z_db),1):
+            zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
+            reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
+            db.commit()
+            pole.append([])
+
+            zadano = 81-zadani.count("0")
+            k_reseni = 81-zadano
+            reseno = reseni.count("1")+reseni.count("2")+reseni.count("3")+reseni.count("4")+reseni.count("5")+reseni.count("6")+reseni.count("7")+reseni.count("8")+reseni.count("9")
+            pomer = str(reseno)+"/"+str(k_reseni)+" ("+str(100*reseno/k_reseni)+"%)"
+
+            print(zadano,k_reseni,reseno)
+
+            pole[i].append(seznam_z_db[i][0])
+            pole[i].append(seznam_z_db[i][1])
+            pole[i].append(seznam_z_db[i][2])
+            pole[i].append(seznam_z_db[i][3])
+            pole[i].append(pomer)
+
+        self.aktivniSudoku = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.predtimDoplneno = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.resize(500,500)
+        self.setFixedSize(500,500)
+        self.setWindowTitle("Moje sudoku")
+
+        self.tabulka = QtGui.QTableWidget(self)
+        self.tabulka.setMinimumWidth(500)
+        self.tabulka.setFixedHeight(200)
+        self.tabulka.setColumnCount(5)
+        self.tabulka.setColumnWidth(0,92)
+        self.tabulka.setColumnWidth(1,92)
+        self.tabulka.setColumnWidth(2,92)
+        self.tabulka.setColumnWidth(3,92)
+        self.tabulka.setColumnWidth(4,92)
+        self.tabulka.setRowCount(len(seznam_z_db))
+        self.tabulka.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tabulka.setHorizontalHeaderLabels(["#","Datum","Uživatel","Identifikátor","Doplněno"])
+        self.tabulka.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tabulka.setSortingEnabled(True)
+        self.tabulka.itemSelectionChanged.connect(self.vybranRadek)
+        self.tabulka.cellDoubleClicked.connect(self.acceptDialog)
+        self.tabulka.selectRow(0)
+
+        for i in range(0,len(seznam_z_db),1):
+            for j in range(0,5,1):
+                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(unicode(pole[i][j])))
+
 
         tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
         tlacitka.accepted.connect(self.acceptDialog)
@@ -121,9 +279,9 @@ class LoadFromDBDialog(QtGui.QDialog):
 class DBInsertDialog(QtGui.QDialog):
 
     def acceptDialog(self):
-        identifikator = str(self.entry.text())
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+str(identifikator)+"','"+str(okno.uzivatel)+"','"+"zadat rucne"+"','"+str(sudoku2string(okno.zadani))+"','"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
-
+        identifikator = unicode(self.entry.text())
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode(identifikator)+"','"+unicode(okno.uzivatel)+"','"+"zadat rucne"+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
 
     def rejectDialog(self):
@@ -161,6 +319,49 @@ class DBInsertDialog(QtGui.QDialog):
         tlacitka.rejected.connect(self.rejectDialog)
         tlacitka.move(60,260)
 
+class DBInsertDialog2(QtGui.QDialog):
+
+    def acceptDialog(self):
+        identifikator = unicode(self.entry.text())
+        db.execute("INSERT INTO sudoku_rozreseno VALUES(NULL,'"+unicode(okno.uzivatel)+"','"+unicode(identifikator)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(sudoku2string(okno.reseni))+"','"+unicode(cand2string(okno.kandidati))+"','"+unicode(cand2string(okno.barvy))+"','"+unicode(note2string(okno.akronymy))+"','"+unicode(note2string(okno.poznamky))+"','"+unicode(okno.cas.text()[5:])+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
+        self.close()
+
+    def rejectDialog(self):
+        self.close()
+        okno.reject1 = True
+
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() == QtCore.Qt.Key_Return:
+            self.acceptDialog()
+        elif QKeyEvent.key() == QtCore.Qt.Key_Escape:
+            self.rejectDialog()
+
+    def __init__(self):
+        super(DBInsertDialog2,self).__init__()
+
+        self.setWindowTitle("Uložit do databáze")
+        self.resize(300,300)
+
+        self.label = QtGui.QLabel(self)
+        self.label.setText("Identifikátor:")
+        self.label.move(50,50)
+
+        self.entry = QtGui.QLineEdit(self)
+        self.entry.setMinimumWidth(200)
+        self.entry.move(50,100)
+        self.entry.setFocus()
+
+        self.label2 =QtGui.QLabel(self)
+        self.label2.setText("Hint: Uložte si rozřešené sudoku, abyste jej mohli kdykoli dokončit. Sudoku naleznete v záložce \"Moje sudoku\" pod svým uživatelským jménem.")
+        self.label2.setWordWrap(True)
+        self.label2.move(50,150)
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(60,260)
+
 class UserSelectDialog(QtGui.QDialog):
 
     def acceptDialog(self):
@@ -168,12 +369,12 @@ class UserSelectDialog(QtGui.QDialog):
         self.zabit = False
 
         if self.rb1.isChecked():
-            uzivatel = str(self.entry.text())
+            uzivatel = unicode(self.entry.text())
             seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
             if uzivatel in seznam_v_db:
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
                 return False
-            db.execute("INSERT INTO uzivatele VALUES ('"+uzivatel+"')")
+            db.execute("INSERT INTO uzivatele VALUES ('"+unicode(uzivatel)+"')")
         elif self.rb2.isChecked():
             uzivatel = self.combobox.currentText()
         db.commit()
@@ -247,12 +448,12 @@ class UserSelectDialog2(QtGui.QDialog):
     def acceptDialog(self):
         self.zabit = True
         if self.rb1.isChecked():
-            okno.uzivatel = str(self.entry.text())
+            okno.uzivatel = unicode(self.entry.text())
             seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
             if okno.uzivatel in seznam_v_db:
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
                 return False
-            db.execute("INSERT INTO uzivatele VALUES ('"+okno.uzivatel+"')")
+            db.execute("INSERT INTO uzivatele VALUES ('"+unicode(okno.uzivatel)+"')")
         elif self.rb2.isChecked():
             okno.uzivatel = self.combobox.currentText()
         okno.mainMenu4.setTitle("&Uživatel: "+okno.uzivatel)
@@ -329,6 +530,9 @@ class ShortNoteDialog(QtGui.QDialog):
         if len(self.obsah) > 8:
             warn = QtGui.QMessageBox.warning(None,"Varování","Akronym nemůže být delší než 8 znaků.")
             self.obsah = ""
+        elif "|" in self.obsah:
+            warn = QtGui.QMessageBox.warning(None,"Varování","Akronym obsahuje nepovolený znak: |")
+            self.obsah = ""
         else:
             self.close()
 
@@ -363,7 +567,11 @@ class LongNoteDialog(QtGui.QDialog):
     def acceptDialog(self):
         self.signal = True
         self.obsah = unicode(self.editLongNoteTB.toPlainText())
-        self.close()
+        if "|" in self.obsah:
+            warn = QtGui.QMessageBox.warning(None,"Varování","Poznámka obsahuje nepovolený znak: |")
+            self.obsah = ""
+        else:
+            self.close()
 
     def rejectDialog(self):
         self.close()
@@ -570,7 +778,7 @@ class RemoveColorDialog(QtGui.QDialog):
         self.color1.setChecked(False)
 
     def provest1(self):
-        obsah = self.entry.text()
+        obsah = unicode(self.entry.text())
 
         if len(obsah) != 2:
             warn = QtGui.QMessageBox.warning(None,"Varování","Neplatné souřadnice políčka.")
@@ -2427,18 +2635,18 @@ class SuSol(QtGui.QMainWindow):
         bezchyby = True
         temp = solver2.solvePC(self.zadani,pocetReseni=2)
 
-        if len(temp) > 1:
+        if len(temp[0]) > 1:
             self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá jednoznačné řešení, tato funkce není k dispozici.</b></font>")
             self.update()
             return False
-        elif len(temp) == 0:
+        elif len(temp[0]) == 0:
             self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá řešení, tato funkce není k dispozici.</b></font>")
             self.update()
             return False
 
         for i in range(0,9,1):
             for j in range(0,9,1):
-                if self.doplneno[i][j] != temp[0][i][j] and self.doplneno[i][j] != 0:
+                if self.doplneno[i][j] != temp[0][0][i][j] and self.doplneno[i][j] != 0:
                     self.chyby[i][j] = 1
                     bezchyby = False
 
@@ -2513,7 +2721,8 @@ class SuSol(QtGui.QMainWindow):
         todo()
 
     def ulozitClick(self):
-        todo()
+        dialog = DBInsertDialog2()
+        dialog.exec_()
 
     def tabsReseni(self):
         self.tabs = QtGui.QTabWidget(self)
@@ -3598,6 +3807,10 @@ class SuSol(QtGui.QMainWindow):
         dialog = UserSelectDialog2()
         dialog.exec_()
 
+    def mojeSudokuClick(self):
+        dialog = LoadFromDBDialog2()
+        dialog.exec_()
+
 
     def __init__(self):
         super(SuSol, self).__init__()
@@ -3804,7 +4017,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
-        self.mainMenu4.addAction("Moje sudoku...")
+        self.mainMenu4.addAction("Moje sudoku...", self.mojeSudokuClick)
         self.mainMenu4.addAction("Moje nastavení...")
 
 

@@ -39,6 +39,52 @@ def string2sudoku(x):
 
     return sd
 
+def cand2string(x):
+    output = ""
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            for k in x[i][j]:
+                output = output + str(k)
+            output = output + "|"
+
+    return output[:-1]
+
+def string2cand(x):
+    output = []
+    x = x.split("|")
+    for i in range(0,9,1):
+        output.append([])
+        for j in range(0,9,1):
+            output[i].append([])
+            for k in x[9*i+j]:
+                output[i][j].append(int(k))
+
+    return output
+
+
+def note2string(x):
+    output = ""
+    for i in range(0,9,1):
+        for j in range(0,9,1):
+            output = output + x[i][j]
+            output = output + "|"
+
+    return output[:-1]
+
+def string2note(x):
+    x = x.split("|")
+    print(x)
+    output = []
+    for i in range(0,9,1):
+        output.append([])
+        for j in range(0,9,1):
+            output[i].append(unicode(x[9*i+j]))
+
+    return output
+
+def string2time(x):
+    x = x.split(":")
+    return int(x[0])*3600+int(x[1])*60+int(x[2])
 
 def num2alpha(n):
     if n == 0:

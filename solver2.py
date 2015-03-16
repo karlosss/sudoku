@@ -334,13 +334,14 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
 
     return [reseni,(time()-cas)*1000]
 
-def solveHuman(zad,naked_single=True,hidden_single=True):
+def solveHuman(zad,kandidati=None,naked_single=True,hidden_single=True):
     #################POVINNA HLAVICKA######################
     cas = time()
     zadani = deepcopy(zad)
     reseni = deepcopy(zadani)
-    kandidati = inicializovatKandidaty(reseni)
-    kandidati = generujKandidaty(kandidati,reseni)
+    if kandidati == None:
+        kandidati = inicializovatKandidaty(reseni)
+        kandidati = generujKandidaty(kandidati,reseni)
     postup = []
     #################POVINNA HLAVICKA######################
 

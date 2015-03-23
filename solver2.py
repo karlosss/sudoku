@@ -91,6 +91,7 @@ def generujKandidaty(kandidati,reseni): #vygeneruje soubor kandidatu pro kazde p
 def nakedSingle(kandidati,reseni,logovatPostup=False): #pokud je v policku pouze jeden kandidat, tak je toto cislo oznaceno jako reseni pro dane policko
 
     postup = []
+    nemaReseni = False
 
     for i in range(0,9,1):
         for j in range(0,9,1):
@@ -100,14 +101,20 @@ def nakedSingle(kandidati,reseni,logovatPostup=False): #pokud je v policku pouze
                 postup = ["Naked Single",[i,j],kandidati[i][j][0]]
                 kandidati[i][j] = []
                 if logovatPostup:
-                    return [kandidati,reseni,postup]
+                    return [kandidati,reseni,nemaReseni,postup]
                 else:
-                    return [kandidati,reseni]
+                    return [kandidati,reseni,nemaReseni]
+            elif len(kandidati[i][j]) == 0 and reseni[i][j] == 0:
+                nemaReseni = True
+                if logovatPostup:
+                    return [kandidati,reseni,nemaReseni,postup]
+                else:
+                    return [kandidati,reseni,nemaReseni]
 
     if logovatPostup:
-        return [kandidati,reseni,postup]
+        return [kandidati,reseni,nemaReseni,postup]
     else:
-        return [kandidati,reseni]
+        return [kandidati,reseni,nemaReseni]
 
 def hiddenSingle(kandidati,reseni,logovatPostup=False): #kdyz je v danem setu nejaky kandidat prave jednou, tak prave v tomto policku bude toto cislo jako reseni; zaroven umi detekovat neresitelnost v pripade, ze v nejakem setu nejake cislo uplne chybi
 
@@ -234,7 +241,6 @@ def bruteForce(reseni,pocetReseni):
         if sudokuVyreseno(reseni):
             toReturn.append(reseni)
             if len(toReturn) == pocetReseni:
-                print("ukonceno predcasne")
                 return toReturn
 
         while cesta[hloubka] > len(kandidati[policko[0]][policko[1]])-1: #CHYBA, snizuju hloubku
@@ -258,6 +264,7 @@ def bruteForce(reseni,pocetReseni):
         sudokuBef = None
         candBef = None
         nemaReseni = False
+        nemaReseni2 = False
 
         while sudokuBef != reseni or candBef != kandidati:
             while sudokuBef != reseni or candBef != kandidati:
@@ -267,6 +274,7 @@ def bruteForce(reseni,pocetReseni):
                 vysl = nakedSingle(kandidati,reseni)
                 kandidati = vysl[0]
                 reseni = vysl[1]
+                nemaReseni2 = vysl[2]
                 kandidati = generujKandidaty(kandidati,reseni)
 
             sudokuBef = deepcopy(reseni)
@@ -277,7 +285,7 @@ def bruteForce(reseni,pocetReseni):
             nemaReseni = vysl[2]
             kandidati = generujKandidaty(kandidati,reseni)
 
-        if not nemaReseni: #OK, jdu do vetsi hloubky
+        if nemaReseni == False and nemaReseni2 == False: #OK, jdu do vetsi hloubky
             hloubka = hloubka + 1
             mezipamet.append(deepcopy(reseni))
             cesta.append(0)
@@ -305,6 +313,7 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
     sudokuBef = None
     candBef = None
     nemaReseni = False
+    nemaReseni2 = False
 
     while sudokuBef != reseni or candBef != kandidati:
         while sudokuBef != reseni or candBef != kandidati:
@@ -314,6 +323,7 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
             vysl = nakedSingle(kandidati,reseni)
             kandidati = vysl[0]
             reseni = vysl[1]
+            nemaReseni2 = vysl[2]
             kandidati = generujKandidaty(kandidati,reseni)
 
         sudokuBef = deepcopy(reseni)
@@ -324,7 +334,7 @@ def solvePC(zad,pocetReseni=1,bf=True): #vraci pole: nulty prvek je pole reseni 
         nemaReseni = vysl[2]
         kandidati = generujKandidaty(kandidati,reseni)
 
-    if nemaReseni:
+    if nemaReseni or nemaReseni2:
         return [[],(time()-cas)*1000]
 
     if not sudokuVyreseno(reseni) and bf:
@@ -352,6 +362,7 @@ def solveHuman(zad,kandidati=None,naked_single=True,hidden_single=True):
     sudokuBef = None
     candBef = None
     nemaReseni = False
+    nemaReseni2 = False
 
     while sudokuBef != reseni or candBef != kandidati:
         while sudokuBef != reseni or candBef != kandidati:
@@ -361,9 +372,10 @@ def solveHuman(zad,kandidati=None,naked_single=True,hidden_single=True):
                 vysl = nakedSingle(kandidati,reseni,logovatPostup=True)
                 kandidati = vysl[0]
                 reseni = vysl[1]
-                if vysl[2] != []:
-                    postup.append(vysl[2])
-                    return [postup,(time()-cas),True,True]
+                nemaReseni2 = vysl[2]
+                if vysl[3] != []:
+                    postup.append(vysl[3])
+                    return [postup,(time()-cas)*1000,True,True]
                 kandidati = generujKandidaty(kandidati,reseni)
 
         if hidden_single:
@@ -378,7 +390,7 @@ def solveHuman(zad,kandidati=None,naked_single=True,hidden_single=True):
                 return [postup,(time()-cas),True,True]
             kandidati = generujKandidaty(kandidati,reseni)
 
-        if nemaReseni:
+        if nemaReseni or nemaReseni2:
             return [[],(time()-cas)*1000,False,True]
 
     if not sudokuVyreseno(reseni):

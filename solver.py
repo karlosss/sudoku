@@ -2,11 +2,18 @@ from __future__ import print_function
 from time import time
 from copy import deepcopy
 from random import shuffle
+import sys
 start = time()
 logovatPostup = True
 ukazatCas = True
 postup = []
 mapa = [[],[]]
+
+class Null:
+    def write(self,x):
+        pass
+
+sys.stdout = Null()
 
 #syntax postupu:
 #cand - vygenerovat vsechny kandidaty (ve vsech nevyplnenych polickach cisla 1 az 9 bez filtrace)
@@ -258,7 +265,7 @@ def transform_solution(cand):
     return output
 
 
-def solve(raw, mode=0, bf=True, duration=False, logPostup=True):
+def solve(raw, mode=0, bf=True, duration=False, logPostup=False):
     """Vyresi sudoku zadane jako dvojrozmerne pole, s prazdnymi misty oznaceymi nulou.
     Vraci pole dvojrozmernych poli vyreseneho sudoku (reseni muze byt i vic), do konzole vypisuje cas v sekundach potrebny k vyreseni.
 
@@ -315,7 +322,7 @@ def solve(raw, mode=0, bf=True, duration=False, logPostup=True):
         print(time()-start)
         for i in range(0,len(postup),1):
             print(i,postup[i])
-        return candidates
+        return [transform_solution(candidates)]
     else:
         #print("bez BF neresitelne zadani")
         print(time()-start)

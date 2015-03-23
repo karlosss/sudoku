@@ -8,7 +8,7 @@ from time import time, localtime, strftime
 from sqlite3 import connect
 import sys
 import solver2
-import generator
+import generator2
 
 db = connect("data.db")
 uzivatel = ""
@@ -29,7 +29,7 @@ class LoadFromDBDialog(QtGui.QDialog):
             painter.drawLine(130,220+i*250/9,380,220+i*250/9)
             painter.drawLine(130+i*250/9,220,130+i*250/9,470)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(20)
         painter.setFont(pismo)
 
@@ -129,7 +129,7 @@ class LoadFromDBDialog2(QtGui.QDialog):
             painter.drawLine(130,220+i*250/9,380,220+i*250/9)
             painter.drawLine(130+i*250/9,220,130+i*250/9,470)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(20)
         painter.setFont(pismo)
 
@@ -210,8 +210,6 @@ class LoadFromDBDialog2(QtGui.QDialog):
             reseno = reseni.count("1")+reseni.count("2")+reseni.count("3")+reseni.count("4")+reseni.count("5")+reseni.count("6")+reseni.count("7")+reseni.count("8")+reseni.count("9")
             pomer = str(reseno)+"/"+str(k_reseni)+" ("+str(100*reseno/k_reseni)+"%)"
 
-            print(zadano,k_reseni,reseno)
-
             pole[i].append(seznam_z_db[i][0])
             pole[i].append(seznam_z_db[i][1])
             pole[i].append(seznam_z_db[i][2])
@@ -274,13 +272,11 @@ class LoadFromDBDialog2(QtGui.QDialog):
         tlacitka.rejected.connect(self.rejectDialog)
         tlacitka.move(330,475)
 
-
-
 class DBInsertDialog(QtGui.QDialog):
 
     def acceptDialog(self):
         identifikator = unicode(self.entry.text())
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode(identifikator)+"','"+unicode(okno.uzivatel)+"','"+"zadat rucne"+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode(identifikator)+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
         db.commit()
         self.close()
 
@@ -388,7 +384,10 @@ class UserSelectDialog(QtGui.QDialog):
             exit()
 
     def keyPressEvent(self, QKeyEvent):
-        pass
+        key = QKeyEvent.key()
+
+        if key == QtCore.Qt.Key_Return:
+            self.acceptDialog()
 
 
     def click2(self):
@@ -441,7 +440,6 @@ class UserSelectDialog(QtGui.QDialog):
 
         tlacitka.accepted.connect(self.acceptDialog)
         tlacitka.rejected.connect(self.rejectDialog)
-
 
 class UserSelectDialog2(QtGui.QDialog):
 
@@ -511,10 +509,6 @@ class UserSelectDialog2(QtGui.QDialog):
 
         tlacitka.accepted.connect(self.acceptDialog)
         tlacitka.rejected.connect(self.rejectDialog)
-
-
-
-
 
 class ShortNoteDialog(QtGui.QDialog):
 
@@ -1000,10 +994,16 @@ class ColorSettingsDialog(QtGui.QDialog):
             self.but10.setStyleSheet("background-color: "+self.tempCursor)
             self.update()
 
+    def click13(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempDoplneno = barva
+            self.but10.setStyleSheet("background-color: "+self.tempDoplneno)
+            self.update()
+
     def click11(self):
         self.tempColors = ["#8888ff","#88ff88","#ff8888","#ffff88","#ff88ff","#88ffff","#880088","#888800","#008888"]
-        self.tempCursor = "#ffbbbb"
-        self.but10.setStyleSheet("background-color: "+self.tempCursor)
         self.but1.setStyleSheet("background-color: "+self.tempColors[0])
         self.but2.setStyleSheet("background-color: "+self.tempColors[1])
         self.but3.setStyleSheet("background-color: "+self.tempColors[2])
@@ -1015,6 +1015,42 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.but9.setStyleSheet("background-color: "+self.tempColors[8])
         self.update()
 
+    def click12(self):
+        pismo = QtGui.QFontDialog()
+        self.font,ok = pismo.getFont()
+        self.font = unicode(self.font.key())
+
+        if ok:
+            self.font = self.font[:self.font.index(",")]
+            self.but12.setText("Nastavit písmo v aplikaci (aktivní: "+self.font+")")
+
+    def click14(self):
+        barva = QtGui.QColorDialog.getColor()
+        if barva.isValid():
+            barva = barva.name()
+            self.tempSouradniceColor = barva
+            self.but14.setStyleSheet("background-color: "+self.tempSouradniceColor)
+
+    def click15(self):
+        self.tempDoplneno = "#0000ff"
+        self.tempSouradniceColor = "#888888"
+        self.tempSouradnice = True
+        self.tempCursor = "#ffbbbb"
+        self.font = "Arial"
+
+        self.but10.setStyleSheet("background-color: "+self.tempCursor)
+        self.cbox2.setChecked(self.tempSouradnice)
+        self.but14.setStyleSheet("background-color: "+self.tempSouradniceColor)
+        self.but13.setStyleSheet("background-color: "+self.tempDoplneno)
+        self.but12.setText("Změnit písmo v aplikaci (aktivní: Arial)")
+
+
+
+
+
+
+
+
 
     def toggle(self):
         if self.cbox.isChecked():
@@ -1022,21 +1058,46 @@ class ColorSettingsDialog(QtGui.QDialog):
         else:
             self.tempAutoColor = False
 
-    def acceptDialog(self):
+    def toggle2(self):
+        self.tempSouradnice = self.cbox2.isChecked()
+
+    def applyDialog(self,x):
+        try:
+            if x.text() != "Apply":
+                return False
+        except AttributeError:
+            pass
+
         okno.barvyBarev = deepcopy(self.tempColors)
         okno.barvaKurzoru = self.tempCursor
         okno.autoColor = self.tempAutoColor
-        okno.upravitWidgety()
+        okno.pismoCeleAplikace = self.font
+        okno.barvaDoplnenychCisel = self.tempDoplneno
+        okno.zobrazitSouradnice = self.tempSouradnice
+        okno.barvaSouradnicPolicek = self.tempSouradniceColor
+        try:
+            okno.upravitWidgety()
+        except AttributeError:
+            pass
+
+        okno.update()
+
+    def acceptDialog(self):
+        self.applyDialog(None)
         self.close()
 
     def __init__(self):
         super(ColorSettingsDialog, self).__init__()
 
+        self.font = okno.pismoCeleAplikace
+        self.tempDoplneno = okno.barvaDoplnenychCisel
+
         self.tempColors = deepcopy(okno.barvyBarev)
         self.tempCursor = okno.barvaKurzoru
+        self.tempSouradniceColor = okno.barvaSouradnicPolicek
 
-        self.setWindowTitle("Nastavení barev")
-        self.resize(300,100)
+        self.setWindowTitle("Nastavení")
+        self.resize(400,400)
 
         self.cbox = QtGui.QCheckBox()
         self.cbox.setText("Automaticky zabarvovat dle kandidátů")
@@ -1080,13 +1141,35 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.but9.setStyleSheet("color: #000000; background-color: "+self.tempColors[8])
         self.but9.setText("Změnit barvu 9")
         self.but9.clicked.connect(self.click9)
+        self.but11 = QtGui.QPushButton()
+        self.but11.setText("Obnovit výchozí")
+        self.but11.clicked.connect(self.click11)
+
+
         self.but10 = QtGui.QPushButton()
         self.but10.setStyleSheet("color: #000000; background-color: "+self.tempCursor)
         self.but10.setText("Změnit barvu kurzoru")
         self.but10.clicked.connect(self.click10)
-        self.but11 = QtGui.QPushButton()
-        self.but11.setText("Obnovit výchozí")
-        self.but11.clicked.connect(self.click11)
+        self.but12 = QtGui.QPushButton()
+        self.but12.setText("Změnit písmo v aplikaci (aktivní: "+okno.pismoCeleAplikace+")")
+        self.but12.clicked.connect(self.click12)
+        self.but13 = QtGui.QPushButton()
+        self.but13.setStyleSheet("color: #000000; background-color: "+self.tempDoplneno)
+        self.but13.setText("Změnit barvu doplněných čísel")
+        self.but13.clicked.connect(self.click13)
+        self.but14 = QtGui.QPushButton()
+        self.but14.setStyleSheet("color: #000000; background-color: "+self.tempSouradniceColor)
+        self.but14.setText("Změnit barvu souřadnic políček")
+        self.but14.clicked.connect(self.click14)
+        self.cbox2 = QtGui.QCheckBox()
+        self.cbox2.setText("Zobrazovat souřadnice políček")
+        self.cbox2.setChecked(okno.zobrazitSouradnice)
+        self.cbox2.toggled.connect(self.toggle2)
+        self.tempSouradnice = self.cbox2.isChecked()
+        self.but15 = QtGui.QPushButton()
+        self.but15.setText("Obnovit výchozí")
+        self.but15.clicked.connect(self.click15)
+
 
         line = QtGui.QFrame()
         line.setFrameShape(QtGui.QFrame.HLine)
@@ -1100,16 +1183,13 @@ class ColorSettingsDialog(QtGui.QDialog):
         line3.setFrameShape(QtGui.QFrame.HLine)
         line3.setFrameShadow(QtGui.QFrame.Sunken)
 
-        line4 = QtGui.QFrame()
-        line4.setFrameShape(QtGui.QFrame.HLine)
-        line4.setFrameShadow(QtGui.QFrame.Sunken)
-
-        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel)
+        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Cancel,parent=self)
         buttons.rejected.connect(self.close)
         buttons.accepted.connect(self.acceptDialog)
+        buttons.clicked.connect(self.applyDialog)
+        buttons.move(140,370)
 
-
-        layout = QtGui.QVBoxLayout(self)
+        layout = QtGui.QVBoxLayout()
         layout.addWidget(self.cbox)
         layout.addWidget(line)
         layout.addWidget(self.but1)
@@ -1122,11 +1202,26 @@ class ColorSettingsDialog(QtGui.QDialog):
         layout.addWidget(self.but8)
         layout.addWidget(self.but9)
         layout.addWidget(line2)
-        layout.addWidget(self.but10)
-        layout.addWidget(line3)
         layout.addWidget(self.but11)
-        layout.addWidget(line4)
-        layout.addWidget(buttons)
+
+        layout2 = QtGui.QVBoxLayout()
+        layout2.addWidget(self.cbox2)
+        layout2.addWidget(self.but10)
+        layout2.addWidget(self.but13)
+        layout2.addWidget(self.but14)
+        layout2.addWidget(self.but12)
+        layout2.addWidget(line3)
+        layout2.addWidget(self.but15)
+
+        self.zalozky = QtGui.QTabWidget(self)
+        self.zalozky.setFixedWidth(400)
+        self.tab1 = QtGui.QWidget()
+        self.tab1.setLayout(layout)
+        self.tab2 = QtGui.QWidget()
+        self.tab2.setLayout(layout2)
+        self.zalozky.addTab(self.tab1,"Zabarvování políček")
+        self.zalozky.addTab(self.tab2,"Vzhled")
+
 
 class TimeSetDialog(QtGui.QDialog):
 
@@ -1149,7 +1244,6 @@ class TimeSetDialog(QtGui.QDialog):
         self.minuty.setRange(0,59)
         self.sekundy = QtGui.QSpinBox()
         self.sekundy.setRange(0,59)
-
 
         h = okno.time // 3600
         m = (okno.time-h*3600) // 60
@@ -1180,19 +1274,19 @@ class TimeSetDialog(QtGui.QDialog):
 class GeneratorDialog(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator.generate(limit=40)
+        okno.zadani = generator2.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("reseni")
 
     def stredniClick(self):
-        okno.zadani = generator.generate()[0]
+        okno.zadani = generator2.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("reseni")
 
     def tezkeClick(self):
-        okno.zadani = generator.generate(bf=True)
+        okno.zadani = generator2.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("reseni")
@@ -1208,7 +1302,7 @@ class GeneratorDialog(QtGui.QDialog):
         self.setWindowTitle("Vygenerovat")
         self.resize(600,300)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
@@ -1265,19 +1359,19 @@ class GeneratorDialog(QtGui.QDialog):
 class GeneratorDialog2(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator.generate(limit=40)
+        okno.zadani = generator2.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("na_cas")
 
     def stredniClick(self):
-        okno.zadani = generator.generate()
+        okno.zadani = generator2.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("na_cas")
 
     def tezkeClick(self):
-        okno.zadani = generator.generate(bf=True)
+        okno.zadani = generator2.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         self.close()
         okno.zobrazElementy("na_cas")
@@ -1291,7 +1385,7 @@ class GeneratorDialog2(QtGui.QDialog):
         self.setWindowTitle("Vygenerovat")
         self.resize(600,300)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
@@ -1348,22 +1442,22 @@ class GeneratorDialog2(QtGui.QDialog):
 class GeneratorDialog3(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator.generate(limit=40)
+        okno.zadani = generator2.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (lehké)"
         self.close()
-        okno.zobrazElementy("zadavani")
 
     def stredniClick(self):
-        okno.zadani = generator.generate()
+        okno.zadani = generator2.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (střední)"
         self.close()
-        okno.zobrazElementy("zadavani")
 
     def tezkeClick(self):
-        okno.zadani = generator.generate(bf=True)
+        okno.zadani = generator2.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (těžké)"
         self.close()
-        okno.zobrazElementy("zadavani")
 
     def vlastniClick(self):
         todo()
@@ -1374,7 +1468,7 @@ class GeneratorDialog3(QtGui.QDialog):
         self.setWindowTitle("Vygenerovat")
         self.resize(600,300)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
@@ -1431,6 +1525,8 @@ class GeneratorDialog3(QtGui.QDialog):
 class JineMetodyDialog(QtGui.QDialog):
     def zadatRucne(self):
         okno.zobrazElementy("zadavani")
+        okno.puvod = "zadat ručně"
+        okno.zadani = [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]
         self.close()
 
     def databazeClick(self):
@@ -1447,9 +1543,9 @@ class JineMetodyDialog(QtGui.QDialog):
         super(JineMetodyDialog, self).__init__()
 
         self.setWindowTitle("Metody zadávání")
-        self.resize(600,300)
+        self.resize(450,300)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
         pismo.setPixelSize(25)
 
         layout = QtGui.QGridLayout(self)
@@ -1474,15 +1570,6 @@ class JineMetodyDialog(QtGui.QDialog):
         self.databaze.setMaximumHeight(150)
         self.databaze.clicked.connect(self.databazeClick)
 
-        self.soubor = QtGui.QPushButton()
-        self.soubor.setText("Z obrázku")
-        self.soubor.setFont(pismo)
-        self.soubor.setMinimumWidth(150)
-        self.soubor.setMinimumHeight(150)
-        self.soubor.setMaximumWidth(150)
-        self.soubor.setMaximumHeight(150)
-        self.soubor.clicked.connect(todo)
-
         self.klavesnice = QtGui.QPushButton()
         self.klavesnice.setText("Zadat ručně")
         self.klavesnice.setFont(pismo)
@@ -1501,8 +1588,7 @@ class JineMetodyDialog(QtGui.QDialog):
         # layout.addWidget(self.lehke,5,0)
         layout.addWidget(self.generator,5,1)
         layout.addWidget(self.databaze,5,2)
-        layout.addWidget(self.soubor,5,3)
-        layout.addWidget(self.klavesnice,5,4)
+        layout.addWidget(self.klavesnice,5,3)
 
 class SuSol(QtGui.QMainWindow):
 
@@ -1522,14 +1608,14 @@ class SuSol(QtGui.QMainWindow):
             vyska = self.frameGeometry().height()
             sirka = self.frameGeometry().width()
 
-            pismo1 = QtGui.QFont("Arial")
+            pismo1 = QtGui.QFont(self.pismoCeleAplikace)
             pismo1.setPixelSize(vyska/5)
             painter.setFont(pismo1)
             fm = QtGui.QFontMetrics(pismo1)
             sirkaTextu = fm.width("SuSol")
             painter.drawText(sirka/2-sirkaTextu/2,vyska/5+vyska/40,"SuSol")
 
-            pismo2 = QtGui.QFont("Arial")
+            pismo2 = QtGui.QFont(self.pismoCeleAplikace)
             if vyska/35 > 1:
                 pismo2.setPixelSize(vyska/35)
             else:
@@ -1673,39 +1759,39 @@ class SuSol(QtGui.QMainWindow):
                 painter.drawRect(Xpos,i*squareSize*3+Ypos,9*squareSize+min(self.frameGeometry().width(),self.frameGeometry().height())//strongLineWidthDivisor,min(self.frameGeometry().width(),self.frameGeometry().height())//strongLineWidthDivisor)
 
 
-            pismo = QtGui.QFont("Arial")
+            pismo = QtGui.QFont(self.pismoCeleAplikace)
             pismo.setWeight(100)
             velikost = 0.7*squareSize
             if velikost < 1:
                 velikost = 1
             pismo.setPixelSize(velikost)
 
-            pismo2 = QtGui.QFont("Arial")
+            pismo2 = QtGui.QFont(self.pismoCeleAplikace)
             pismo2.setWeight(100)
             velikost = 0.7*squareSize
             if velikost < 1:
                 velikost = 1
             pismo2.setPixelSize(velikost)
 
-            pismo3 = QtGui.QFont("Arial")
+            pismo3 = QtGui.QFont(self.pismoCeleAplikace)
             velikost = 0.15*squareSize
             if velikost < 1:
                 velikost = 1
             pismo3.setPixelSize(velikost)
 
-            pismo4 = QtGui.QFont("Arial")
+            pismo4 = QtGui.QFont(self.pismoCeleAplikace)
             velikost = 0.18*squareSize
             if velikost < 1:
                 velikost = 1
             pismo4.setPixelSize(velikost)
 
-            pismo5 = QtGui.QFont("Arial")
+            pismo5 = QtGui.QFont(self.pismoCeleAplikace)
             velikost = 0.12*squareSize
             if velikost < 1:
                 velikost = 1
             pismo5.setPixelSize(velikost)
 
-            pismo6 = QtGui.QFont("Arial")
+            pismo6 = QtGui.QFont(self.pismoCeleAplikace)
             velikost = 0.3*squareSize
             if velikost < 1:
                 velikost = 1
@@ -1723,7 +1809,7 @@ class SuSol(QtGui.QMainWindow):
                         painter.drawText(x,y,str(self.zadani[j][i]))
                     if self.reseni[i][j] != 0 and self.zadani[i][j] == 0 and self.rezim not in ("zadavani"):
                         painter.setFont(pismo2)
-                        painter.setPen(QtGui.QColor("#0000ff"))
+                        painter.setPen(QtGui.QColor(self.barvaDoplnenychCisel))
 
                         x = j*squareSize+Xpos+squareSize/2.85
                         y = i*squareSize+Ypos+0.9*squareSize
@@ -1738,14 +1824,13 @@ class SuSol(QtGui.QMainWindow):
                         painter.setPen(QtGui.QColor("#000000"))
                         painter.drawText(x,y,"*")
 
+                    if self.zobrazitSouradnice:
+                        painter.setPen(QtGui.QColor(self.barvaSouradnicPolicek))
+                        painter.setFont(pismo3)
 
-                    painter.setPen(QtGui.QColor("#888888"))
-                    painter.setFont(pismo3)
-
-                    x = j*squareSize+Xpos+squareSize/2.85+squareSize*0.45
-                    y = i*squareSize+Ypos+0.9*squareSize
-
-                    painter.drawText(x,y,num2alpha(i)+str(j+1))
+                        x = j*squareSize+Xpos+squareSize/2.85+squareSize*0.45
+                        y = i*squareSize+Ypos+0.9*squareSize
+                        painter.drawText(x,y,num2alpha(i)+str(j+1))
 
                     if self.rezim in ("zadavani"):
                         continue
@@ -1765,14 +1850,7 @@ class SuSol(QtGui.QMainWindow):
 
                     painter.drawText(x,y,self.akronymy[i][j])
 
-
-
-
-
-
-
         painter.end()
-        self.update()
 
     def mousePressEvent(self, event):
         x = event.x()
@@ -1895,6 +1973,7 @@ class SuSol(QtGui.QMainWindow):
     def doplnCislo(self,cislo):
         if self.rezim in ("zadavani"):
             self.zadani[self.curY][self.curX] = cislo
+            self.puvod = "zadat ručně"
             self.update()
         if self.rezim in ("reseni","na_cas"):
             if self.candMode == False:
@@ -1931,6 +2010,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color1.setText("")
             self.barvy[self.curY][self.curX][0] = 0
+        self.update()
 
     def click2(self,x):
         if x:
@@ -1939,6 +2019,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color2.setText("")
             self.barvy[self.curY][self.curX][1] = 0
+        self.update()
 
     def click3(self,x):
         if x:
@@ -1947,6 +2028,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color3.setText("")
             self.barvy[self.curY][self.curX][2] = 0
+        self.update()
 
     def click4(self,x):
         if x:
@@ -1955,6 +2037,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color4.setText("")
             self.barvy[self.curY][self.curX][3] = 0
+        self.update()
 
     def click5(self,x):
         if x:
@@ -1963,6 +2046,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color5.setText("")
             self.barvy[self.curY][self.curX][4] = 0
+        self.update()
 
     def click6(self,x):
         if x:
@@ -1971,6 +2055,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color6.setText("")
             self.barvy[self.curY][self.curX][5] = 0
+        self.update()
 
     def click7(self,x):
         if x:
@@ -1979,6 +2064,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color7.setText("")
             self.barvy[self.curY][self.curX][6] = 0
+        self.update()
 
     def click8(self,x):
         if x:
@@ -1987,6 +2073,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color8.setText("")
             self.barvy[self.curY][self.curX][7] = 0
+        self.update()
 
     def click9(self,x):
         if x:
@@ -1995,6 +2082,7 @@ class SuSol(QtGui.QMainWindow):
         else:
             self.color9.setText("")
             self.barvy[self.curY][self.curX][8] = 0
+        self.update()
 
 
 
@@ -2445,39 +2533,78 @@ class SuSol(QtGui.QMainWindow):
 
         otazka = QtGui.QMessageBox.question(None,"Dotaz","Opravdu chcete sudoku restartovat? Všechny neuložené změny budou ztraceny!",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
         if otazka == QtGui.QMessageBox.Ok:
+            self.reset()
 
-            if self.casBezi:
-                self.startstop()
+
+    def reset(self):
+        if self.casBezi:
+            self.startstop()
             self.time = 0
             self.timeBackup = 0
             self.cas.setText("Čas: 0:00:00")
 
 
-            self.zadani = deepcopy(self.zadaniBackup)
+        self.zadani = deepcopy(self.zadaniBackup)
 
-            self.reseni = [
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0]]
+        self.reseni = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]]
 
-            self.chyby = [
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0]]
+        self.chyby = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]]
 
-            self.indikace1 = [
+        self.indikace1 = [
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.indikace2 = [
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.indikace3 = [
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.doplneno = [
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0],
@@ -2487,93 +2614,57 @@ class SuSol(QtGui.QMainWindow):
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0]
-            ]
+        ]
 
-            self.indikace2 = [
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0]
-            ]
+        self.akronymy = [
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""]]
 
-            self.indikace3 = [
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0]
-            ]
+        self.poznamky = [
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""],
+            ["","","","","","","","",""]]
 
-            self.doplneno = [
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0]
-            ]
-
-            self.akronymy = [
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""]]
-
-            self.poznamky = [
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""],
-                ["","","","","","","","",""]]
-
-            self.barvy = [
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
-                [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]]
+        self.barvy = [
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+            [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]]
 
 
-            self.zobrazitBarvu = [1,1,1,1,1,1,1,1,1]
+        self.zobrazitBarvu = [1,1,1,1,1,1,1,1,1]
 
-            self.kandidati = [
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]],
-                [[],[],[],[],[],[],[],[],[]]]
+        self.kandidati = [
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]],
+            [[],[],[],[],[],[],[],[],[]]]
 
-            self.upravitWidgety()
-            self.update()
+        self.upravitWidgety()
+        self.update()
 
     def zkontrolovat(self):
         self.odstranitIndikatory()
@@ -2717,6 +2808,8 @@ class SuSol(QtGui.QMainWindow):
                 self.ukecanejBanner.setText("<b>Naked Single:</b> Na políčku <b><font color='#00aa00'>"+num2alpha(kroky[0][0][1][0])+str(kroky[0][0][1][1]+1)+"</b></font> může být pouze číslo <b>"+str(kroky[0][0][2])+"</b>. Proto jej tam můžeme dopsat.")
                 self.indikace3[kroky[0][0][1][0]][kroky[0][0][1][1]] = 1
 
+        self.update()
+
     def vzdatSe(self):
         todo()
 
@@ -2727,7 +2820,7 @@ class SuSol(QtGui.QMainWindow):
     def tabsReseni(self):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
 
         self.mainNumber = QtGui.QComboBox()
@@ -2752,7 +2845,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumberLabel.setMinimumWidth(80)
 
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.candLabel = QtGui.QLabel()
@@ -2761,7 +2854,7 @@ class SuSol(QtGui.QMainWindow):
         self.candLabel.setMinimumHeight(30)
         self.candLabel.setMinimumWidth(80)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.colorLabel = QtGui.QLabel()
@@ -2995,7 +3088,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.poleLabel = QtGui.QLabel("A1")
         self.poleLabel.setStyleSheet("color: red")
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
         pismo.setBold(True)
         self.poleLabel.setFont(pismo)
@@ -3070,7 +3163,7 @@ class SuSol(QtGui.QMainWindow):
     def tabsNaCas(self):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
 
         self.mainNumber = QtGui.QComboBox()
@@ -3095,7 +3188,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumberLabel.setMinimumWidth(80)
 
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.candLabel = QtGui.QLabel()
@@ -3104,7 +3197,7 @@ class SuSol(QtGui.QMainWindow):
         self.candLabel.setMinimumHeight(30)
         self.candLabel.setMinimumWidth(80)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.colorLabel = QtGui.QLabel()
@@ -3338,7 +3431,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.poleLabel = QtGui.QLabel("A1")
         self.poleLabel.setStyleSheet("color: red")
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
         pismo.setBold(True)
         self.poleLabel.setFont(pismo)
@@ -3433,6 +3526,7 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def hotovo(self):
+        print(self.puvod)
         self.reject1 = False
         if len(solver2.solvePC(self.zadani,2)[0]) == 0:
             QtGui.QMessageBox.critical(None,"Chyba","Sudoku nemá řešení.")
@@ -3474,7 +3568,7 @@ class SuSol(QtGui.QMainWindow):
     def tabsZadavani(self):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setFocusPolicy(QtCore.Qt.NoFocus)
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
 
         self.mainNumber = QtGui.QComboBox()
@@ -3499,7 +3593,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumberLabel.setMinimumWidth(80)
 
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.candLabel = QtGui.QLabel()
@@ -3508,7 +3602,7 @@ class SuSol(QtGui.QMainWindow):
         self.candLabel.setMinimumHeight(30)
         self.candLabel.setMinimumWidth(80)
 
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(15)
 
         self.colorLabel = QtGui.QLabel()
@@ -3710,7 +3804,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.poleLabel = QtGui.QLabel("A1")
         self.poleLabel.setStyleSheet("color: red")
-        pismo = QtGui.QFont("Arial")
+        pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
         pismo.setBold(True)
         self.poleLabel.setFont(pismo)
@@ -3787,8 +3881,11 @@ class SuSol(QtGui.QMainWindow):
         if self.rezim == "zadavani":
             self.setWindowTitle("SuSol - Zadávání")
             self.candMode = False
+            self.puvod = "zadat ručně"
             self.tabsZadavani()
-
+            self.smazatVsechnaCisla()
+            self.curX = 0
+            self.curY = 0
 
         self.update()
 
@@ -3801,6 +3898,7 @@ class SuSol(QtGui.QMainWindow):
 
     def domu(self):
         self.zobrazElementy("welcome_screen")
+        self.reset()
         self.update()
 
     def zmenitUzivatele(self):
@@ -3808,7 +3906,16 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def mojeSudokuClick(self):
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        if len(seznam_z_db) == 0:
+            QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
+            return False
+
         dialog = LoadFromDBDialog2()
+        dialog.exec_()
+
+    def mojeNastaveniClick(self):
+        dialog = ColorSettingsDialog()
         dialog.exec_()
 
 
@@ -3854,6 +3961,7 @@ class SuSol(QtGui.QMainWindow):
         self.timer.timeout.connect(self.pricitat_cas)
 
         self.rezim = "welcome_screen"
+        self.puvod = ""
         self.zadani = [
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0],
@@ -3993,7 +4101,6 @@ class SuSol(QtGui.QMainWindow):
         self.resize(sirka,vyska)
 
         self.mainMenu1 = self.menuBar().addMenu("&SuSol")
-        self.mainMenu2 = self.menuBar().addMenu("Su&doku")
         self.mainMenu3 = self.menuBar().addMenu("&Přejít")
         self.mainMenu4 = self.menuBar().addMenu("&Uživatel:")
 
@@ -4005,24 +4112,16 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu1.addSeparator()
         self.mainMenu1.addAction("Konec\tAlt+F4",self.quit)
 
-        self.mainMenu2.addAction("Nové sudoku\tCtrl+N")
-        self.mainMenu2.addAction("Načíst sudoku\tCtrl+O")
-        self.mainMenu2.addAction("Uložit sudoku\tCtrl+S")
-        self.mainMenu2.addAction("Uložit sudoku jako\tF12")
-        self.mainMenu2.addSeparator()
-        self.mainMenu2.addAction("Soutěžní režim")
-        self.mainMenu2.addAction("Výsledky")
-
         self.mainMenu3.addAction("Domů\tHome", self.domu)
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
         self.mainMenu4.addAction("Moje sudoku...", self.mojeSudokuClick)
-        self.mainMenu4.addAction("Moje nastavení...")
+        self.mainMenu4.addAction("Moje nastavení...",self.mojeNastaveniClick)
+        self.mainMenu4.addAction("Výsledky...",self.mojeNastaveniClick)
 
 
         self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self.ukecanejBanner = QtGui.QLabel(self)
@@ -4036,7 +4135,6 @@ class SuSol(QtGui.QMainWindow):
 
         self.uzivatel = uzivatel
         self.mainMenu4.setTitle("&Uživatel: "+uzivatel)
-
 
 app = QtGui.QApplication(sys.argv)
 okno = SuSol()

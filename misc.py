@@ -73,7 +73,6 @@ def note2string(x):
 
 def string2note(x):
     x = x.split("|")
-    print(x)
     output = []
     for i in range(0,9,1):
         output.append([])

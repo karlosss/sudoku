@@ -183,3 +183,11 @@ def wideDB2list(x):
         output.append(i)
     return output
 
+def realWideDB2list(x):
+    output = []
+    for i in x:
+        for j in i:
+            output.append(j)
+
+    return output
+

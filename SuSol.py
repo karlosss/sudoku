@@ -16,6 +16,118 @@ uzivatel = ""
 def todo():
     QtGui.QMessageBox.critical(None,"TODO","TODO")
 
+
+class VysledkyDialog(QtGui.QDialog):
+
+    def paintEvent(self, QPaintEvent):
+        painter = QtGui.QPainter(self)
+
+        painter.setPen(QtGui.QColor("#000000"))
+        painter.setBrush(QtGui.QColor("#ffffff"))
+
+        painter.drawRect(130,220,250,250)
+        for i in range(1,9,1):
+            painter.drawLine(130,220+i*250/9,380,220+i*250/9)
+            painter.drawLine(130+i*250/9,220,130+i*250/9,470)
+
+        pismo = QtGui.QFont(okno.pismoCeleAplikace)
+        pismo.setPixelSize(20)
+        painter.setFont(pismo)
+
+        for i in range(0,9,1):
+            for j in range(0,9,1):
+                if self.aktivniSudoku[j][i] != 0:
+                    painter.drawText(130+(i+0.4)*250/9,220+(j+0.85)*250/9,str(self.aktivniSudoku[j][i]))
+
+
+        painter.setBrush(QtGui.QColor("#000000"))
+        for i in range(0,4,1):
+            painter.drawRect(130,220+250*i/3,250,2)
+            painter.drawRect(130+250*i/3,220,2,250)
+
+
+        painter.end()
+
+    def acceptDialog(self):
+        self.close()
+        okno.zadani = deepcopy(self.aktivniSudoku)
+        okno.zadaniBackup = deepcopy(self.aktivniSudoku)
+        okno.zobrazElementy("reseni")
+        okno.update()
+
+    def rejectDialog(self):
+        self.close()
+        okno.update()
+
+    def vybranRadek(self):
+        try:
+            cisloRadku = self.tabulka.currentItem().row()
+            aktivniID = self.tabulka.item(cisloRadku,0).text()
+        except AttributeError:
+            aktivniID = 1
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id="+str(aktivniID)))[0])
+
+        for i in range(0,9,1):
+            self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
+
+        self.update()
+
+    def __init__(self,level):
+        super(VysledkyDialog,self).__init__()
+
+        seznam_z_db = wideDB2list(db.execute("SELECT id,cas,uzivatel,obtiznost,datum FROM sudoku_soutez WHERE obtiznost='"+"gen. ("+level+")' ORDER BY cas"))
+        db.commit()
+
+        self.aktivniSudoku = [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.resize(500,500)
+        self.setFixedSize(500,500)
+        self.setWindowTitle("Výsledky")
+
+        self.tabulka = QtGui.QTableWidget(self)
+        self.tabulka.setMinimumWidth(500)
+        self.tabulka.setFixedHeight(200)
+        self.tabulka.setColumnCount(5)
+        self.tabulka.setColumnWidth(0,92)
+        self.tabulka.setColumnWidth(1,92)
+        self.tabulka.setColumnWidth(2,92)
+        self.tabulka.setColumnWidth(3,92)
+        self.tabulka.setColumnWidth(4,92)
+        self.tabulka.setRowCount(len(seznam_z_db))
+        self.tabulka.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tabulka.setHorizontalHeaderLabels(["#","Čas","Uživatel","Obtížnost","Datum"])
+        self.tabulka.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tabulka.setSortingEnabled(True)
+        self.tabulka.itemSelectionChanged.connect(self.vybranRadek)
+        self.tabulka.cellDoubleClicked.connect(self.acceptDialog)
+        self.tabulka.selectRow(0)
+
+        for i in range(0,len(seznam_z_db),1):
+            for j in range(0,5,1):
+                self.tabulka.setItem(i, j, QtGui.QTableWidgetItem(unicode(seznam_z_db[i][j])))
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Close,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(400,475)
+
+        self.resitStejne = QtGui.QPushButton(self)
+        self.resitStejne.setText("Otevřít sudoku v tréninkovém režimu")
+        self.resitStejne.move(10,475)
+        self.resitStejne.clicked.connect(self.acceptDialog)
+
+
+
 class LoadFromDBDialog(QtGui.QDialog):
 
     def paintEvent(self, QPaintEvent):
@@ -50,9 +162,12 @@ class LoadFromDBDialog(QtGui.QDialog):
     def acceptDialog(self):
         self.close()
         okno.zadani = deepcopy(self.aktivniSudoku)
+        okno.zadaniBackup = deepcopy(self.aktivniSudoku)
+        okno.update()
 
     def rejectDialog(self):
         self.close()
+        okno.update()
 
     def vybranRadek(self):
         try:
@@ -170,10 +285,13 @@ class LoadFromDBDialog2(QtGui.QDialog):
         okno.akronymy = string2note(load[4])
         okno.poznamky = string2note(load[5])
         okno.time = string2time(load[6])
+        okno.zadaniBackup = deepcopy(okno.zadani)
         okno.zobrazElementy("reseni")
+        okno.update()
 
     def rejectDialog(self):
         self.close()
+        okno.update()
 
     def vybranRadek(self):
         try:
@@ -371,9 +489,15 @@ class UserSelectDialog(QtGui.QDialog):
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
                 return False
             db.execute("INSERT INTO uzivatele VALUES ('"+unicode(uzivatel)+"')")
+            db.execute("INSERT INTO settings VALUES ('"+unicode(uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
+
         elif self.rb2.isChecked():
             uzivatel = self.combobox.currentText()
         db.commit()
+        try:
+            okno.fetchSettings()
+        except NameError:
+            pass
         self.close()
 
     def rejectDialog(self):
@@ -452,14 +576,19 @@ class UserSelectDialog2(QtGui.QDialog):
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
                 return False
             db.execute("INSERT INTO uzivatele VALUES ('"+unicode(okno.uzivatel)+"')")
+            db.execute("INSERT INTO settings VALUES ('"+unicode(okno.uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
         elif self.rb2.isChecked():
             okno.uzivatel = self.combobox.currentText()
         okno.mainMenu4.setTitle("&Uživatel: "+okno.uzivatel)
+
         db.commit()
+        okno.fetchSettings()
         self.close()
+        okno.update()
 
     def rejectDialog(self):
         self.close()
+        okno.update()
 
     def click2(self):
         self.entry.setDisabled(True)
@@ -1044,6 +1173,10 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.but13.setStyleSheet("background-color: "+self.tempDoplneno)
         self.but12.setText("Změnit písmo v aplikaci (aktivní: Arial)")
 
+    def click16(self):
+        self.combobox.setCurrentIndex(0)
+        self.styl = QtGui.QStyleFactory.keys()[0]
+
 
 
 
@@ -1061,12 +1194,18 @@ class ColorSettingsDialog(QtGui.QDialog):
     def toggle2(self):
         self.tempSouradnice = self.cbox2.isChecked()
 
+    def zmenStyl(self,x):
+        self.styl = self.combobox.currentText()
+
     def applyDialog(self,x):
         try:
             if x.text() != "Apply":
                 return False
         except AttributeError:
             pass
+
+        db.execute("UPDATE settings SET barva1='"+unicode(self.tempColors[0])+"',barva2='"+unicode(self.tempColors[1])+"',barva3='"+unicode(self.tempColors[2])+"',barva4='"+unicode(self.tempColors[3])+"',barva5='"+unicode(self.tempColors[4])+"',barva6='"+unicode(self.tempColors[5])+"',barva7='"+unicode(self.tempColors[6])+"',barva8='"+unicode(self.tempColors[7])+"',barva9='"+unicode(self.tempColors[8])+"',kurzor='"+unicode(self.tempCursor)+"',doplneno='"+unicode(self.tempDoplneno)+"',souradnice='"+unicode(self.tempSouradniceColor)+"',font='"+unicode(self.font)+"',cbsouradnice='"+unicode(int(self.tempSouradnice))+"',cbkandidati='"+unicode(int(self.tempAutoColor))+"',styl='"+unicode(self.styl)+"' WHERE uzivatel='"+unicode(okno.uzivatel)+"'")
+        db.commit()
 
         okno.barvyBarev = deepcopy(self.tempColors)
         okno.barvaKurzoru = self.tempCursor
@@ -1075,11 +1214,23 @@ class ColorSettingsDialog(QtGui.QDialog):
         okno.barvaDoplnenychCisel = self.tempDoplneno
         okno.zobrazitSouradnice = self.tempSouradnice
         okno.barvaSouradnicPolicek = self.tempSouradniceColor
+        app.setStyle(QtGui.QStyleFactory.create(self.styl))
         try:
             okno.upravitWidgety()
         except AttributeError:
             pass
 
+        okno.tabs.hide()
+        if okno.rezim == "na_cas":
+            okno.tabsNaCas()
+        elif okno.rezim == "zadavani":
+            okno.tabsZadavani()
+        elif okno.rezim == "reseni":
+            okno.tabsReseni()
+
+
+
+        okno.fetchSettings()
         okno.update()
 
     def acceptDialog(self):
@@ -1089,6 +1240,8 @@ class ColorSettingsDialog(QtGui.QDialog):
     def __init__(self):
         super(ColorSettingsDialog, self).__init__()
 
+        self.styl = okno.styl
+
         self.font = okno.pismoCeleAplikace
         self.tempDoplneno = okno.barvaDoplnenychCisel
 
@@ -1097,7 +1250,7 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.tempSouradniceColor = okno.barvaSouradnicPolicek
 
         self.setWindowTitle("Nastavení")
-        self.resize(400,400)
+        self.resize(400,500)
 
         self.cbox = QtGui.QCheckBox()
         self.cbox.setText("Automaticky zabarvovat dle kandidátů")
@@ -1169,6 +1322,24 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.but15 = QtGui.QPushButton()
         self.but15.setText("Obnovit výchozí")
         self.but15.clicked.connect(self.click15)
+        self.but16 = QtGui.QPushButton()
+        self.but16.setText("Obnovit výchozí")
+        self.but16.clicked.connect(self.click16)
+
+        self.combobox = QtGui.QComboBox()
+        for i in QtGui.QStyleFactory.keys():
+            self.combobox.addItem(i)
+        self.combobox.activated.connect(self.zmenStyl)
+
+        for i in range(0,len(QtGui.QStyleFactory.keys()),1):
+            if QtGui.QStyleFactory.keys()[i] == self.styl:
+                self.combobox.setCurrentIndex(i)
+                break
+
+        label = QtGui.QLabel()
+        label.setWordWrap(True)
+        label.setText("Styl aplikace:")
+
 
 
         line = QtGui.QFrame()
@@ -1183,11 +1354,23 @@ class ColorSettingsDialog(QtGui.QDialog):
         line3.setFrameShape(QtGui.QFrame.HLine)
         line3.setFrameShadow(QtGui.QFrame.Sunken)
 
+        line4 = QtGui.QFrame()
+        line4.setFrameShape(QtGui.QFrame.HLine)
+        line4.setFrameShadow(QtGui.QFrame.Sunken)
+
+        line5 = QtGui.QFrame()
+        line5.setFrameShape(QtGui.QFrame.HLine)
+        line5.setFrameShadow(QtGui.QFrame.Sunken)
+
+        line6 = QtGui.QFrame()
+        line6.setFrameShape(QtGui.QFrame.HLine)
+        line6.setFrameShadow(QtGui.QFrame.Sunken)
+
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Cancel,parent=self)
         buttons.rejected.connect(self.close)
         buttons.accepted.connect(self.acceptDialog)
         buttons.clicked.connect(self.applyDialog)
-        buttons.move(140,370)
+        buttons.move(140,470)
 
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.cbox)
@@ -1206,12 +1389,21 @@ class ColorSettingsDialog(QtGui.QDialog):
 
         layout2 = QtGui.QVBoxLayout()
         layout2.addWidget(self.cbox2)
+        layout2.addWidget(line5)
         layout2.addWidget(self.but10)
         layout2.addWidget(self.but13)
         layout2.addWidget(self.but14)
+        layout2.addWidget(line4)
         layout2.addWidget(self.but12)
         layout2.addWidget(line3)
         layout2.addWidget(self.but15)
+
+        layout3 = QtGui.QVBoxLayout()
+        layout3.addWidget(label)
+        layout3.addWidget(self.combobox)
+        layout3.addWidget(line6)
+        layout3.addWidget(self.but16)
+        layout3.addWidget(QtGui.QWidget())
 
         self.zalozky = QtGui.QTabWidget(self)
         self.zalozky.setFixedWidth(400)
@@ -1219,8 +1411,11 @@ class ColorSettingsDialog(QtGui.QDialog):
         self.tab1.setLayout(layout)
         self.tab2 = QtGui.QWidget()
         self.tab2.setLayout(layout2)
+        self.tab3 = QtGui.QWidget()
+        self.tab3.setLayout(layout3)
         self.zalozky.addTab(self.tab1,"Zabarvování políček")
         self.zalozky.addTab(self.tab2,"Vzhled")
+        self.zalozky.addTab(self.tab3,"Styl aplikace")
 
 
 class TimeSetDialog(QtGui.QDialog):
@@ -1276,18 +1471,27 @@ class GeneratorDialog(QtGui.QDialog):
     def lehkeClick(self):
         okno.zadani = generator2.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (lehké)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("reseni")
 
     def stredniClick(self):
         okno.zadani = generator2.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (střední)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("reseni")
 
     def tezkeClick(self):
         okno.zadani = generator2.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (těžké)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("reseni")
 
@@ -1361,18 +1565,28 @@ class GeneratorDialog2(QtGui.QDialog):
     def lehkeClick(self):
         okno.zadani = generator2.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (lehké)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
+
 
     def stredniClick(self):
         okno.zadani = generator2.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (střední)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
 
     def tezkeClick(self):
         okno.zadani = generator2.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
+        okno.puvod = "gen. (těžké)"
+        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
 
@@ -1638,7 +1852,7 @@ class SuSol(QtGui.QMainWindow):
             painter.drawText(sirka/2-sirkaTextu/2,vyska/2.2+vyska/20*2,"Když nemůžeš vyřešit sudoku v novinách, tak ti s tím pomohu")
             painter.drawText(sirka/2-sirkaTextu/2,vyska/2.2+vyska/20*3,"Když si chceš jen tak potrénovat, tak klikni")
             painter.drawText(sirka/2-sirkaTextu/2,vyska/2.2+vyska/20*4,"Chceš-li si přečíst návod, klikni")
-            painter.drawText(sirka/2-sirkaTextu/2,vyska/2.2+vyska/20*5,"Kdyby něco, vlevo dole je tlačítko s nápovědou.")
+            painter.drawText(sirka/2-sirkaTextu/2,vyska/2.2+vyska/20*5,"Kdyby něco, v menu nahoře je tlačítko s nápovědou.")
             painter.drawText(sirka/2-sirkaTextu/2,vyska/1.2,"Bav se!")
 
             self.welcomeButton1.resize(fm.width("ahoj"),pismo2.pixelSize())
@@ -1851,6 +2065,13 @@ class SuSol(QtGui.QMainWindow):
                     painter.drawText(x,y,self.akronymy[i][j])
 
         painter.end()
+        if self.resized:
+            self.resized = False
+            self.update()
+
+
+    def resizeEvent(self, QResizeEvent):
+        self.resized = True
 
     def mousePressEvent(self, event):
         x = event.x()
@@ -1967,9 +2188,6 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
 
-
-
-
     def doplnCislo(self,cislo):
         if self.rezim in ("zadavani"):
             self.zadani[self.curY][self.curX] = cislo
@@ -1992,6 +2210,18 @@ class SuSol(QtGui.QMainWindow):
                         self.barvy[self.curY][self.curX][cislo-1] = 1
             self.upravitWidgety()
             self.update()
+
+        if self.rezim in ("na_cas") and solver2.sudokuVyreseno(self.doplneno):
+            if len(solver2.solvePC(self.doplneno)[0]) == 1:
+                self.startstop()
+                db.execute("INSERT INTO sudoku_soutez VALUES(NULL,'"+unicode(self.cas.text()[5:])+"','"+unicode(self.uzivatel)+"','"+unicode(self.puvod)[7:-1]+"','"+unicode(sudoku2string(self.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+                db.commit()
+                QtGui.QMessageBox.information(None,"Info","Sudoku úspěšně vyřešeno! Stisknutím OK se vrátíte na úvodní obrazovku.")
+                okno.zobrazElementy("welcome_screen")
+
+
+
+
 
     def smazKandidaty(self):
         self.kandidati[self.curY][self.curX]= []
@@ -2811,7 +3041,15 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def vzdatSe(self):
-        todo()
+        otazka = QtGui.QMessageBox.question(None,"Dotaz","Opravdu se chcete vzdát? Sudoku budete moci dokončit s pomocí počítače.",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+        if otazka == QtGui.QMessageBox.Ok:
+            self.rezim = "reseni"
+            self.hideAll()
+            self.setWindowTitle("SuSol - Trénink")
+            self.tabsReseni()
+            self.casBezi = True
+            self.casStartStop.setStyleSheet("background-color: #008800")
+
 
     def ulozitClick(self):
         dialog = DBInsertDialog2()
@@ -2994,6 +3232,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.shortNoteLabel = QtGui.QLabel()
         self.shortNoteLabel.setText("Akronym")
+        self.shortNoteLabel.setFont(pismo)
 
         self.shortNoteBtn = QtGui.QPushButton()
         self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3006,6 +3245,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.longNoteLabel = QtGui.QLabel()
         self.longNoteLabel.setText("Poznámka")
+        self.longNoteLabel.setFont(pismo)
         self.longNoteLabel.setMinimumWidth(80)
 
         self.longNoteBtn = QtGui.QPushButton()
@@ -3017,7 +3257,7 @@ class SuSol(QtGui.QMainWindow):
         self.longNoteTB.setDisabled(True)
 
         self.cas = QtGui.QLabel()
-        self.cas.setText("Čas: 0:00:00")
+        self.cas.setText(hms(self.time))
         self.cas.setFont(pismo)
 
         self.casMenu = QtGui.QMenu()
@@ -3086,7 +3326,7 @@ class SuSol(QtGui.QMainWindow):
 
 
 
-        self.poleLabel = QtGui.QLabel("A1")
+        self.poleLabel = QtGui.QLabel("ABCDEFGHI"[self.curY]+str(self.curX+1))
         self.poleLabel.setStyleSheet("color: red")
         pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
@@ -3337,6 +3577,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.shortNoteLabel = QtGui.QLabel()
         self.shortNoteLabel.setText("Akronym")
+        self.shortNoteLabel.setFont(pismo)
 
         self.shortNoteBtn = QtGui.QPushButton()
         self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3349,6 +3590,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.longNoteLabel = QtGui.QLabel()
         self.longNoteLabel.setText("Poznámka")
+        self.longNoteLabel.setFont(pismo)
         self.longNoteLabel.setMinimumWidth(80)
 
         self.longNoteBtn = QtGui.QPushButton()
@@ -3360,7 +3602,7 @@ class SuSol(QtGui.QMainWindow):
         self.longNoteTB.setDisabled(True)
 
         self.cas = QtGui.QLabel()
-        self.cas.setText("Čas: 0:00:00")
+        self.cas.setText(hms(self.time))
         self.cas.setFont(pismo)
 
         self.casMenu = QtGui.QMenu()
@@ -3429,7 +3671,7 @@ class SuSol(QtGui.QMainWindow):
 
 
 
-        self.poleLabel = QtGui.QLabel("A1")
+        self.poleLabel = QtGui.QLabel("ABCDEFGHI"[self.curY]+str(self.curX+1))
         self.poleLabel.setStyleSheet("color: red")
         pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
@@ -3564,6 +3806,29 @@ class SuSol(QtGui.QMainWindow):
     def jineMetody(self):
         dialog = JineMetodyDialog()
         dialog.exec_()
+
+    def fetchSettings(self):
+        self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall()[0][0]
+        db.commit()
+        app.setStyle(QtGui.QStyleFactory.create(self.styl))
+
+        #############CONFIG#######################################################
+        fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall())
+        self.barvyBarev = [fetch[1],fetch[2],fetch[3],fetch[4],fetch[5],fetch[6],fetch[7],fetch[8],fetch[9]]
+        self.barvaKurzoru = fetch[10]
+        self.barvaKandidatu = "#000000"
+        self.barvaHvezdickyUpoznamky = "#000000"
+        self.barvaAkronymu = "#000000"
+        self.barvaZadanychCisel = "#000000"
+        self.barvaDoplnenychCisel = fetch[11]
+        self.barvaSouradnicPolicek = fetch[12]
+        self.barvaChyby = "#ff0000"
+
+        self.pismoCeleAplikace = fetch[13]
+        self.autoColor = bool(int(fetch[15]))
+
+        self.zobrazitSouradnice = bool(int(fetch[14]))
+        #############CONFIG#######################################################
 
     def tabsZadavani(self):
         self.tabs = QtGui.QTabWidget(self)
@@ -3742,6 +4007,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.shortNoteLabel = QtGui.QLabel()
         self.shortNoteLabel.setText("Akronym")
+        self.shortNoteLabel.setFont(pismo)
 
         self.shortNoteBtn = QtGui.QPushButton()
         self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3754,6 +4020,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.longNoteLabel = QtGui.QLabel()
         self.longNoteLabel.setText("Poznámka")
+        self.longNoteLabel.setFont(pismo)
         self.longNoteLabel.setMinimumWidth(80)
 
         self.longNoteBtn = QtGui.QPushButton()
@@ -3765,7 +4032,7 @@ class SuSol(QtGui.QMainWindow):
         self.longNoteTB.setDisabled(True)
 
         self.cas = QtGui.QLabel()
-        self.cas.setText("Čas: 0:00:00")
+        self.cas.setText(hms(self.time))
         self.cas.setFont(pismo)
 
         self.casMenu = QtGui.QMenu()
@@ -3802,7 +4069,7 @@ class SuSol(QtGui.QMainWindow):
         self.jinyZpusob.clicked.connect(self.jineMetody)
 
 
-        self.poleLabel = QtGui.QLabel("A1")
+        self.poleLabel = QtGui.QLabel("ABCDEFGHI"[self.curY]+str(self.curX+1))
         self.poleLabel.setStyleSheet("color: red")
         pismo = QtGui.QFont(self.pismoCeleAplikace)
         pismo.setPixelSize(20)
@@ -3864,6 +4131,7 @@ class SuSol(QtGui.QMainWindow):
 
     def zobrazElementy(self,theme):
         self.hideAll()
+        self.reset()
         self.rezim = theme
 
         if self.rezim == "welcome_screen":
@@ -3897,13 +4165,30 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton4.hide()
 
     def domu(self):
-        self.zobrazElementy("welcome_screen")
-        self.reset()
+        if self.rezim != "welcome_screen":
+            otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if otazka == QtGui.QMessageBox.Ok:
+                self.zobrazElementy("welcome_screen")
+                self.reset()
+        else:
+            self.zobrazElementy("welcome_screen")
+            self.reset()
         self.update()
 
     def zmenitUzivatele(self):
-        dialog = UserSelectDialog2()
-        dialog.exec_()
+        if self.rezim != "welcome_screen":
+            otazka = QtGui.QMessageBox.question(None,"Dotaz","Pro změnu uživatele musíte být na domovské obrazovce. Chcete přepnout na domovskou obrazovku? Veškerá neuložená činnost bude ztracena!",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if otazka == QtGui.QMessageBox.Ok:
+
+                self.zobrazElementy("welcome_screen")
+                self.reset()
+                dialog = UserSelectDialog2()
+                dialog.exec_()
+        else:
+            self.reset()
+            dialog = UserSelectDialog2()
+            dialog.exec_()
+        self.update()
 
     def mojeSudokuClick(self):
         seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
@@ -3913,34 +4198,93 @@ class SuSol(QtGui.QMainWindow):
 
         dialog = LoadFromDBDialog2()
         dialog.exec_()
+        self.update()
 
     def mojeNastaveniClick(self):
         dialog = ColorSettingsDialog()
         dialog.exec_()
+        self.update()
+
+    def vysledkyClickLehke(self):
+        seznam_z_db = wideDB2list(db.execute("SELECT id,cas,uzivatel,obtiznost,datum FROM sudoku_soutez WHERE obtiznost='gen. (lehké)'"))
+        if len(seznam_z_db) == 0:
+            QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
+            return False
+        dialog = VysledkyDialog("lehké")
+        dialog.exec_()
+        self.update()
+
+    def vysledkyClickStredni(self):
+        seznam_z_db = wideDB2list(db.execute("SELECT id,cas,uzivatel,obtiznost,datum FROM sudoku_soutez WHERE obtiznost='gen. (střední)'"))
+        if len(seznam_z_db) == 0:
+            QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
+            return False
+        dialog = VysledkyDialog("střední")
+        dialog.exec_()
+        self.update()
+
+    def vysledkyClickTezke(self):
+        seznam_z_db = wideDB2list(db.execute("SELECT id,cas,uzivatel,obtiznost,datum FROM sudoku_soutez WHERE obtiznost='gen. (těžké)'"))
+        if len(seznam_z_db) == 0:
+            QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
+            return False
+        dialog = VysledkyDialog("těžké")
+        dialog.exec_()
+        self.update()
+
+    def vysledkyClickVlastni(self):
+        seznam_z_db = wideDB2list(db.execute("SELECT id,cas,uzivatel,obtiznost,datum FROM sudoku_soutez WHERE obtiznost='gen. (vlastní)'"))
+        if len(seznam_z_db) == 0:
+            QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
+            return False
+        dialog = VysledkyDialog("vlastní")
+        dialog.exec_()
+        self.update()
+
+    def rezimZadavani(self):
+        if self.rezim != "welcome_screen":
+            otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if otazka == QtGui.QMessageBox.Ok:
+                self.zobrazElementy("zadavani")
+        else:
+            self.zobrazElementy("zadavani")
+        self.update()
+
+    def rezimReseniNaCas(self):
+        if self.rezim != "welcome_screen":
+            otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if otazka == QtGui.QMessageBox.Ok:
+                self.reset()
+                dialog = GeneratorDialog2()
+                dialog.exec_()
+        else:
+            self.reset()
+            dialog = GeneratorDialog2()
+            dialog.exec_()
+        self.update()
+
+    def rezimReseniTrenink(self):
+        if self.rezim != "welcome_screen":
+            otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
+            if otazka == QtGui.QMessageBox.Ok:
+                self.reset()
+                dialog = GeneratorDialog()
+                dialog.exec_()
+        else:
+            self.reset()
+            dialog = GeneratorDialog()
+            dialog.exec_()
+        self.update()
+
 
 
     def __init__(self):
         super(SuSol, self).__init__()
 
-        #############CONFIG#######################################################
-        self.barvyBarev = ["#8888ff","#88ff88","#ff8888","#ffff88","#ff88ff","#88ffff","#880088","#888800","#008888"]
-        self.barvaKurzoru = "#ffbbbb"
-        self.barvaKandidatu = "#000000"
-        self.barvaHvezdickyUpoznamky = "#000000"
-        self.barvaAkronymu = "#000000"
-        self.barvaZadanychCisel = "#000000"
-        self.barvaDoplnenychCisel = "#0000ff"
-        self.barvaSouradnicPolicek = "#888888"
-        self.barvaChyby = "#ff0000"
-
-        self.pismoCeleAplikace = "Arial"
-
-        self.zobrazitSouradnice = True
-        #############CONFIG#######################################################
-
         self.uzivatel = ""
         dialog = UserSelectDialog()
         dialog.exec_()
+        self.resized = False
 
         self.curX = 0
         self.curY = 0
@@ -4104,25 +4448,33 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu3 = self.menuBar().addMenu("&Přejít")
         self.mainMenu4 = self.menuBar().addMenu("&Uživatel:")
 
-        for i in QtGui.QStyleFactory.keys():
-            print(i)
-
         self.mainMenu1.addAction("Pomoc\tF1")
         self.mainMenu1.addAction("O programu")
         self.mainMenu1.addSeparator()
         self.mainMenu1.addAction("Konec\tAlt+F4",self.quit)
 
         self.mainMenu3.addAction("Domů\tHome", self.domu)
+        self.mainMenu3.addAction("Zadávání sudoku", self.rezimZadavani)
+        self.mainMenu3.addAction("Řešení na čas", self.rezimReseniNaCas)
+        self.mainMenu3.addAction("Trénink", self.rezimReseniTrenink)
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
         self.mainMenu4.addAction("Moje sudoku...", self.mojeSudokuClick)
         self.mainMenu4.addAction("Moje nastavení...",self.mojeNastaveniClick)
-        self.mainMenu4.addAction("Výsledky...",self.mojeNastaveniClick)
-
+        self.mainMenu41 = self.mainMenu4.addMenu("Výsledky")
+        self.mainMenu41.addAction("Lehké...",self.vysledkyClickLehke)
+        self.mainMenu41.addAction("Střední...",self.vysledkyClickStredni)
+        self.mainMenu41.addAction("Těžké...",self.vysledkyClickTezke)
+        self.mainMenu41.addAction("Vlastní...",self.vysledkyClickVlastni)
+        #TODO hotkeys
+        #TODO hlasky statusbaru a dialogy
+        #TODO dialog vlastni sudoku
+        #TODO napsat manual
 
         self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainMenu4.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self.ukecanejBanner = QtGui.QLabel(self)
         self.ukecanejBanner.move(15,vyska-60)
@@ -4130,11 +4482,19 @@ class SuSol(QtGui.QMainWindow):
         self.ukecanejBanner.setMaximumWidth(sirka-30)
         self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
 
-        self.welcomeScreen()
-        self.show()
-
         self.uzivatel = uzivatel
         self.mainMenu4.setTitle("&Uživatel: "+uzivatel)
+
+        self.fetchSettings()
+        self.welcomeScreen()
+        self.fetchSettings()
+        self.tabsNaCas()
+        self.tabs.hide()
+        self.tabsZadavani()
+        self.tabs.hide()
+        self.tabsReseni()
+        self.tabs.hide()
+        self.show()
 
 app = QtGui.QApplication(sys.argv)
 okno = SuSol()

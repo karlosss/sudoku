@@ -9,11 +9,11 @@ ukazatCas = True
 postup = []
 mapa = [[],[]]
 
-class Null:
-    def write(self,x):
-        pass
+# class Null:
+#     def write(self,x):
+#         pass
 
-sys.stdout = Null()
+#sys.stdout = Null()
 
 #syntax postupu:
 #cand - vygenerovat vsechny kandidaty (ve vsech nevyplnenych polickach cisla 1 az 9 bez filtrace)
@@ -322,7 +322,7 @@ def solve(raw, mode=0, bf=True, duration=False, logPostup=False):
         print(time()-start)
         for i in range(0,len(postup),1):
             print(i,postup[i])
-        return [transform_solution(candidates)]
+        return candidates
     else:
         #print("bez BF neresitelne zadani")
         print(time()-start)

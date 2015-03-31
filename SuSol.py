@@ -4572,9 +4572,6 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu41.addAction("Těžké...",self.vysledkyClickTezke)
         self.mainMenu41.addAction("Vlastní...",self.vysledkyClickVlastni)
 
-        #TODO hotkeys, tooltips
-        #TODO napsat manual
-
         self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)

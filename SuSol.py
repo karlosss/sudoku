@@ -9,13 +9,52 @@ from sqlite3 import connect
 import sys
 import solver2
 import generator2
+import webbrowser
 
 db = connect("data.db")
 uzivatel = ""
 
-def todo():
-    QtGui.QMessageBox.critical(None,"TODO","TODO")
+class VlastniSudokuDialog(QtGui.QDialog):
 
+    def acceptDialog(self):
+        self.limit = self.cisla.value()
+        self.singlesol = self.jednoznacne.isChecked()
+        self.bf = self.bf.isChecked()
+
+        self.close()
+        self.isAccepted = True
+
+    def rejectDialog(self):
+        self.close()
+        self.isAccepted = False
+
+    def __init__(self):
+        super(VlastniSudokuDialog,self).__init__()
+
+        self.isAccepted = None
+
+        self.resize(300,230)
+        self.setWindowTitle("Vlastní sudoku")
+
+        self.jednoznacne = QtGui.QCheckBox(self)
+        self.bf = QtGui.QCheckBox(self)
+        self.cisla = QtGui.QSpinBox(self)
+        self.label = QtGui.QLabel(self)
+
+        self.label.setText("Minimální počet zadaných čísel")
+        self.cisla.setRange(0,80)
+        self.jednoznacne.setText("Jednoznačné řešení")
+        self.bf.setText("Použít hrubou sílu při testu jednoznačnosti")
+
+        self.jednoznacne.move(8,30)
+        self.bf.move(8,80)
+        self.cisla.move(8,130)
+        self.label.move(70,130)
+
+        tlacitka = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Cancel,parent=self)
+        tlacitka.accepted.connect(self.acceptDialog)
+        tlacitka.rejected.connect(self.rejectDialog)
+        tlacitka.move(100,200)
 
 class VysledkyDialog(QtGui.QDialog):
 
@@ -440,6 +479,7 @@ class DBInsertDialog2(QtGui.QDialog):
         db.execute("INSERT INTO sudoku_rozreseno VALUES(NULL,'"+unicode(okno.uzivatel)+"','"+unicode(identifikator)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(sudoku2string(okno.reseni))+"','"+unicode(cand2string(okno.kandidati))+"','"+unicode(cand2string(okno.barvy))+"','"+unicode(note2string(okno.akronymy))+"','"+unicode(note2string(okno.poznamky))+"','"+unicode(okno.cas.text()[5:])+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
         db.commit()
         self.close()
+        okno.ukecanejBanner.setText("Sudoku uloženo.")
 
     def rejectDialog(self):
         self.close()
@@ -920,6 +960,7 @@ class RemoveColorDialog(QtGui.QDialog):
         okno.barvy[pism][cis-1] = [0,0,0,0,0,0,0,0,0]
         okno.upravitWidgety()
         okno.update()
+        okno.ukecanejBanner.setText("Zabarvení odstraněno.")
 
     def provest2(self):
         if self.color1.isChecked():
@@ -947,6 +988,8 @@ class RemoveColorDialog(QtGui.QDialog):
 
         okno.upravitWidgety()
         okno.update()
+
+        okno.ukecanejBanner.setText("Zabarvení odstraněno.")
 
 
     def __init__(self):
@@ -1496,9 +1539,19 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zobrazElementy("reseni")
 
     def vlastniClick(self):
-        okno.zadaniBackup = deepcopy(okno.zadani)
-        self.close()
-        okno.zobrazElementy("reseni")
+        dialog = VlastniSudokuDialog()
+        dialog.exec_()
+
+        if dialog.isAccepted:
+            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadaniBackup = deepcopy(okno.zadani)
+            okno.puvod = "gen. (vlastní)"
+            db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            db.commit()
+            self.close()
+            okno.zobrazElementy("reseni")
+        else:
+            self.close()
 
     def __init__(self):
         super(GeneratorDialog,self).__init__()
@@ -1591,7 +1644,19 @@ class GeneratorDialog2(QtGui.QDialog):
         okno.zobrazElementy("na_cas")
 
     def vlastniClick(self):
-        print("vlastni")
+        dialog = VlastniSudokuDialog()
+        dialog.exec_()
+
+        if dialog.isAccepted:
+            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadaniBackup = deepcopy(okno.zadani)
+            okno.puvod = "gen. (vlastní)"
+            db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            db.commit()
+            self.close()
+            okno.zobrazElementy("na_cas")
+        else:
+            self.close()
 
     def __init__(self):
         super(GeneratorDialog2,self).__init__()
@@ -1674,7 +1739,16 @@ class GeneratorDialog3(QtGui.QDialog):
         self.close()
 
     def vlastniClick(self):
-        todo()
+        dialog = VlastniSudokuDialog()
+        dialog.exec_()
+
+        if dialog.isAccepted:
+            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadaniBackup = deepcopy(okno.zadani)
+            okno.puvod = "gen. (vlastní)"
+            self.close()
+        else:
+            self.close()
 
     def __init__(self):
         super(GeneratorDialog3,self).__init__()
@@ -2095,6 +2169,12 @@ class SuSol(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
 
+        if key == QtCore.Qt.Key_Home:
+            self.domu()
+
+        if key == QtCore.Qt.Key_F1:
+            self.otevritCelyManual()
+
         if self.rezim in ("zadavani","reseni","na_cas"):
             if key == QtCore.Qt.Key_Left: #pohyb sipkami
                 self.curX = self.curX - 1
@@ -2232,6 +2312,9 @@ class SuSol(QtGui.QMainWindow):
 
     def quit(self):
         self.close()
+
+    def otevritCelyManual(self):
+        webbrowser.open("man/manual.html")
 
     def click1(self,x):
         if x:
@@ -2665,6 +2748,7 @@ class SuSol(QtGui.QMainWindow):
             self.zabarvitDleKandidatuClick()
         self.upravitWidgety()
         self.update()
+        self.ukecanejBanner.setText("Kandidáti vygenerováni.")
 
     def vyresit(self):
         self.odstranitIndikatory()
@@ -2737,7 +2821,9 @@ class SuSol(QtGui.QMainWindow):
 
             self.upravitWidgety()
             self.update()
-            QtGui.QMessageBox.information(None,"Info","Vyřešeno bez chyb ("+str(int(temp[1]))+" ms).")
+            self.ukecanejBanner.setText("Vyřešeno bez chyb.")
+            QtGui.QMessageBox.information(None,"Info","Vyřešeno bez chyb.")
+
 
     def odstranitBarvuClick(self):
         dialog = RemoveColorDialog()
@@ -2756,6 +2842,8 @@ class SuSol(QtGui.QMainWindow):
                     else:
                         self.barvy[i][j][k] = 0
 
+        self.ukecanejBanner.setText("Políčka zabarvena dle jejich kandidátů.")
+
         self.upravitWidgety()
         self.update()
 
@@ -2763,6 +2851,7 @@ class SuSol(QtGui.QMainWindow):
 
         otazka = QtGui.QMessageBox.question(None,"Dotaz","Opravdu chcete sudoku restartovat? Všechny neuložené změny budou ztraceny!",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
         if otazka == QtGui.QMessageBox.Ok:
+            self.ukecanejBanner.setText("Sudoku restartováno.")
             self.reset()
 
 
@@ -2900,11 +2989,12 @@ class SuSol(QtGui.QMainWindow):
         self.odstranitIndikatory()
         temp = solver2.solvePC(self.doplneno)
         if len(temp[0]) == 0:
-            QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby ("+str(int(temp[1]))+" ms).")
             self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku obsahuje chyby.</b></font>")
+            QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby.")
         else:
-            QtGui.QMessageBox.information(None,"Info","Sudoku je bez chyb ("+str(int(temp[1]))+" ms).")
             self.ukecanejBanner.setText("Sudoku je bez chyb.")
+            QtGui.QMessageBox.information(None,"Info","Sudoku je bez chyb.")
+
 
     def odstranitIndikatory(self):
         self.indikace1 = [
@@ -2972,8 +3062,8 @@ class SuSol(QtGui.QMainWindow):
                     bezchyby = False
 
         if bezchyby:
-            QtGui.QMessageBox.information(None,"Info","Sudoku je bez chyb ("+str(int(temp[1]))+" ms).")
             self.ukecanejBanner.setText("Sudoku je bez chyb.")
+            QtGui.QMessageBox.information(None,"Info","Sudoku je bez chyb.")
             self.update()
         else:
             self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku obsahuje chyby.</b></font>")
@@ -2991,10 +3081,12 @@ class SuSol(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(None,"Varování","Sudoku obsahuje chyby. Nejprve je opravte.")
             self.ukazatChyby()
         elif len(kroky[0]) == 0:
+            self.ukecanejBanner.setText("Sudoku nelze za pomoci implementovaných strategií vyřešit.")
             QtGui.QMessageBox.information(None,"Info","Sudoku nelze za pomoci implementovaných strategií vyřešit.")
         else:
-            QtGui.QMessageBox.information(None,"Info","Použij "+kroky[0][0][0]+".")
             self.ukecanejBanner.setText("Použij <b>"+kroky[0][0][0]+"</b>.")
+            QtGui.QMessageBox.information(None,"Info","Použij "+kroky[0][0][0]+".")
+
 
 
     def ukazatKrok(self):
@@ -3281,7 +3373,7 @@ class SuSol(QtGui.QMainWindow):
 
         self.ulozitBtn = QtGui.QPushButton()
         self.ulozitBtn.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.ulozitBtn.setText("&Uložit")
+        self.ulozitBtn.setText("&Uložit...")
         self.ulozitBtn.clicked.connect(self.ulozitClick)
 
         self.zabarvitDleKandidatu = QtGui.QPushButton()
@@ -3752,6 +3844,7 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def smazatVsechnaCisla(self):
+        self.ukecanejBanner.setText("Všechna čísla ze sudoku vymazána.")
         self.zadani = [
             [0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0],
@@ -3768,12 +3861,13 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def hotovo(self):
-        print(self.puvod)
         self.reject1 = False
         if len(solver2.solvePC(self.zadani,2)[0]) == 0:
+            self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá řešení.</b>")
             QtGui.QMessageBox.critical(None,"Chyba","Sudoku nemá řešení.")
             return False
         if len(solver2.solvePC(self.zadani,2)[0]) == 2:
+            self.ukecanejBanner.setText("<b><font color='#ff5500'>Sudoku není jednoznačné.</b>")
             dotaz = QtGui.QMessageBox.question(None,"Dotaz","Sudoku není jednoznačné. Chcete jej přesto řešit?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
             if dotaz == QtGui.QMessageBox.Cancel:
                 return False
@@ -3797,11 +3891,11 @@ class SuSol(QtGui.QMainWindow):
     def zkontrolovatJednoznacnost(self):
         pocetReseni = len(solver2.solvePC(self.zadani,2)[0])
         if pocetReseni == 0:
-            self.ukecanejBanner.setText("Sudoku nemá řešení.")
+            self.ukecanejBanner.setText("<b><font color='#ff0000'>Sudoku nemá řešení.</b>")
         elif pocetReseni == 1:
             self.ukecanejBanner.setText("Sudoku je jednoznačné.")
         elif pocetReseni == 2:
-            self.ukecanejBanner.setText("Sudoku není jednoznačné.")
+            self.ukecanejBanner.setText("<b><font color='#ff5500'>Sudoku není jednoznačné.</b>")
 
     def jineMetody(self):
         dialog = JineMetodyDialog()
@@ -4109,7 +4203,8 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def wb4click(self):
-        todo()
+        # todo()
+        pass
 
     def welcomeScreen(self):
         self.welcomeButton1 = QtGui.QPushButton(self)
@@ -4135,14 +4230,17 @@ class SuSol(QtGui.QMainWindow):
         self.rezim = theme
 
         if self.rezim == "welcome_screen":
+            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
             self.setWindowTitle("SuSol")
             self.welcomeScreen()
 
         if self.rezim == "reseni":
+            self.ukecanejBanner.setText("Tip: klávesou Tab můžeš přepínat z/do režimu zadávání kandidátů.")
             self.setWindowTitle("SuSol - Trénink")
             self.tabsReseni()
 
         if self.rezim == "na_cas":
+            self.ukecanejBanner.setText("Tip: klávesou Tab můžeš přepínat z/do režimu zadávání kandidátů.")
             self.setWindowTitle("SuSol - Řešení na čas")
             self.tabsNaCas()
 
@@ -4154,6 +4252,7 @@ class SuSol(QtGui.QMainWindow):
             self.smazatVsechnaCisla()
             self.curX = 0
             self.curY = 0
+            self.ukecanejBanner.setText("Zadej sudoku pomocí klávesnice nebo použij tlačítko Jiné metody zadávání.")
 
         self.update()
 
@@ -4169,9 +4268,11 @@ class SuSol(QtGui.QMainWindow):
             otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
             if otazka == QtGui.QMessageBox.Ok:
                 self.zobrazElementy("welcome_screen")
+                self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
                 self.reset()
         else:
             self.zobrazElementy("welcome_screen")
+            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
             self.reset()
         self.update()
 
@@ -4446,9 +4547,9 @@ class SuSol(QtGui.QMainWindow):
 
         self.mainMenu1 = self.menuBar().addMenu("&SuSol")
         self.mainMenu3 = self.menuBar().addMenu("&Přejít")
+        self.mainMenu2 = self.menuBar().addMenu("&Nápověda")
         self.mainMenu4 = self.menuBar().addMenu("&Uživatel:")
 
-        self.mainMenu1.addAction("Pomoc\tF1")
         self.mainMenu1.addAction("O programu")
         self.mainMenu1.addSeparator()
         self.mainMenu1.addAction("Konec\tAlt+F4",self.quit)
@@ -4457,6 +4558,9 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu3.addAction("Zadávání sudoku", self.rezimZadavani)
         self.mainMenu3.addAction("Řešení na čas", self.rezimReseniNaCas)
         self.mainMenu3.addAction("Trénink", self.rezimReseniTrenink)
+
+        self.mainMenu2.addAction("Uživatelský manuál\tF1")
+        self.mainMenu2.addAction("Nápověda k aktuálnímu oknu")
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
@@ -4467,12 +4571,12 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu41.addAction("Střední...",self.vysledkyClickStredni)
         self.mainMenu41.addAction("Těžké...",self.vysledkyClickTezke)
         self.mainMenu41.addAction("Vlastní...",self.vysledkyClickVlastni)
-        #TODO hotkeys
-        #TODO hlasky statusbaru a dialogy
-        #TODO dialog vlastni sudoku
+
+        #TODO hotkeys, tooltips
         #TODO napsat manual
 
         self.mainMenu1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.mainMenu2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.mainMenu4.setFocusPolicy(QtCore.Qt.NoFocus)
 

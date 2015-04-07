@@ -10,8 +10,22 @@ import sys
 import solver2
 import generator
 import webbrowser
+from os.path import isfile
 
-db = connect("data.db")
+if not isfile("data.db"):
+    soubor = open("data.db", "w+")
+    soubor.close()
+
+    db = connect("data.db")
+    db.execute("CREATE TABLE uzivatele(jmeno text)")
+    db.execute("CREATE TABLE sudoku_zadani(id integer primary key,identifikator text,uzivatel text,puvod text,zadani text,datum text)")
+    db.execute("CREATE TABLE sudoku_rozreseno(id integer primary key,uzivatel text,identifikator text,zadani text,doplneno text,kandidati text,barvy text,akronymy text,poznamky text,cas text,datum text)")
+    db.execute("CREATE TABLE settings(uzivatel text,barva1 text,barva2 text,barva3 text,barva4 text,barva5 text,barva6 text,barva7 text,barva8 text,barva9 text,kurzor text,doplneno text,souradnice text,font text,cbsouradnice text,cbkandidati text,styl text)")
+    db.execute("CREATE TABLE sudoku_soutez(id integer primary key,cas text,uzivatel text,obtiznost text,zadani text,datum text)")
+    db.commit()
+else:
+    db = connect("data.db")
+
 uzivatel = ""
 
 class VlastniSudokuDialog(QtGui.QDialog):
@@ -4316,7 +4330,7 @@ class SuSol(QtGui.QMainWindow):
         self.rezim = theme
 
         if self.rezim == "welcome_screen":
-            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
+            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015 (vygenerování sudoku trvá zhruba 4 sekundy, proto zuřivě neklikej a dočkej času :) )")
             self.setWindowTitle("SuSol")
             self.welcomeScreen()
 
@@ -4338,7 +4352,7 @@ class SuSol(QtGui.QMainWindow):
             self.smazatVsechnaCisla()
             self.curX = 0
             self.curY = 0
-            self.ukecanejBanner.setText("Zadej sudoku pomocí klávesnice nebo použij tlačítko Jiné metody zadávání.")
+            self.ukecanejBanner.setText("Zadej sudoku pomocí klávesnice, nebo použij tlačítko Jiné metody zadávání.")
 
         self.update()
 
@@ -4359,11 +4373,11 @@ class SuSol(QtGui.QMainWindow):
             otazka = QtGui.QMessageBox.question(None,"Dotaz","Veškeré neuložené změny budou ztraceny. Chcete pokračovat?",QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel)
             if otazka == QtGui.QMessageBox.Ok:
                 self.zobrazElementy("welcome_screen")
-                self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
+                self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015 (vygenerování sudoku trvá zhruba 4 sekundy, proto zuřivě neklikej a dočkej času :) )")
                 self.reset()
         else:
             self.zobrazElementy("welcome_screen")
-            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
+            self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015 (vygenerování sudoku trvá zhruba 4 sekundy, proto zuřivě neklikej a dočkej času :) )")
             self.reset()
         self.update()
 
@@ -4672,7 +4686,7 @@ class SuSol(QtGui.QMainWindow):
         self.ukecanejBanner.move(15,vyska-60)
         self.ukecanejBanner.setMinimumWidth(sirka-30)
         self.ukecanejBanner.setMaximumWidth(sirka-30)
-        self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015")
+        self.ukecanejBanner.setText("SuSol, Karel Jílek, 2015 (vygenerování sudoku trvá zhruba 4 sekundy, proto zuřivě neklikej a dočkej času :) )")
 
         self.uzivatel = uzivatel
         self.mainMenu4.setTitle("&Uživatel: "+uzivatel)

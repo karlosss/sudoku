@@ -2,13 +2,17 @@
 <html>
 	<head>
 		<meta charset="utf8">
+		<title>SuSol - Manuál</title>
 		<style>
-			body {font-family: Arial; font-size: 14pt; padding-left: 30px}
+			body {font-family: Arial; font-size: 14pt; padding-left: 30px; text-align: justify;}
+			a:link {color: black}
+			a:visited {color: black}
+			a:active {color: black}
 			h1 {font-size: 40pt; font-weight: bold}
 			h2 {font-size: 30pt; font-weight: bold}
 			h3 {font-size: 20pt; font-weight: bold}
-			#menu {font-size: 16pt; position: fixed; left: 30px; top: 80px; border: 2px solid black; padding: 10px}
-			#ch1 {position: absolute; left: 30px; top: 300px;}
+			#menu {font-size: 16pt; position: fixed; left: 30px; top: 80px; border: 2px solid black; padding: 10px; background-color: white; z-index: 1}
+			#chapters {position: absolute; left: 30px; top: 330px; padding-right: 30px}
 		</style>
 	</head>
 	
@@ -20,14 +24,110 @@
 		<h1>SuSol - Manuál</h1>
 		<div id="menu">
 			<h3>Obsah</h3>
-			<a href="#">Úvodní obrazovka</a><br>
-			<a href="#">Zadávání sudoku</a><br>
-			<a href="#">Řešení na čas</a><br>
-			<a href="#">Trénink</a>
+			<a href="#">Nahoru</a><br>
+			<a href="#ch1">Úvodní obrazovka</a><br>
+			<a href="#ch2">Zadávání sudoku</a><br>
+			<a href="#ch3">Řešení na čas</a><br>
+			<a href="#ch4">Trénink</a><br>
+			<a href="#ch5">Vymazání databáze</a>
 		</div>
-		<div id="ch1">
-			<h2>Úvodní obrazovka</h2>
-			asdfasdf
+		<div id="chapters">
+			<a name="ch1">
+				<h2>Úvodní obrazovka</h2>
+				<p style="height: 220px"></p>
+				Úvodní obrazovka obsahuje pouze čtyři tlačítka, které umožňují rychlý přechod na jednotlivé režimy programu. Vlevo dole je statusbar, který říká, co se zrovna děje. Vygenerování sudoku trvá zhruba 4 sekundy, proto je potřeba dát programu čas.<br>
+				<h3>Hlavní menu</h3>
+				<ul>
+					<li>SuSol, O programu - informace o programu</li>
+					<li>SuSol, Konec - ukončí aplikaci</li>
+				</ul>
+				<ul>
+					<li>Přejít, Domů - přejít na domovskou obrazovku</li>
+					<li>Přejít, Zadávání sudoku - přejde do režimu <a href="#">Zadávání sudoku</a></li>
+					<li>Přejít, Řešení na čas - přejde do režimu <a href="#">Řešení na čas</a></li>
+					<li>Přejít, Trénink - přejde do režimu <a href="#">Trénink</a></li>
+				</ul>
+				<ul>
+					<li>Nápověda, Uživatelský manuál - otevře tento manuál</li>
+					<li>Nápověda, Nápověda k aktuálnímu oknu - otevře tento manuál na patřičné stránce</li>
+				</ul>
+				<ul>
+					<li>Uživatel, Změnit uživatele - otevře dialog s možností vytvoření nového uživatele nebo prostě přepne na jiného; je nutné být na úvodní obrazovce</li>
+					<li>Uživatel, Moje rozřešené sudoku - otevře dialog umožňující načtení rozřešeného sudoku</li>
+					<li>Uživatel, Moje nastavení - otevře dialog umožňující uživatelské přizpůsobení aplikace</li>
+					<li>Uživatel, Výsledky - ukáže výsledky sudoku řešených v režimu řesení na čas, dle vybrané obtížnosti; možnost řazení dle času, uživatelů a další; také umožňuje vyzkoušet stejné sudoku v tréninkovém režimu</li>
+				</ul>
+			</a>
+			<a name="ch2">
+				<h2>Zadávání sudoku</h2>
+				<p style="height: 250px"></p>
+				V sudoku se lze pohybovat buď šipkami nebo myší. Na klávesnici lze psát čísla. Pokud to nejde, zkontrolujte, zda máte aktivní anglickou klávesnici, nebo použijte Shift. Rovněž lze čísla zadávat pomocí comboboxu v ovládacím panelu.
+
+				<h3>Ovládací panel</h3>
+				<ul>
+					<li>Číslo - číslo, které je v aktuálním políčku zadáno</li>
+					<li>Hotovo - otevře dialog pro uložení a následně přepne do režimu <a href="#">Trénink</a></li>
+					<li>Smazat všechna čísla - vymaže všechna doposud napsaná čísla ze sudoku</li>
+					<li>Jiné metody zadávání - otevře dialog umožňující načtení již dříve vytvořeného sudoku, případě automatické vygenerování (toto trvá okolo 4 sekund)</li>
+				</ul>
+			</a>
+			<a name="ch3">
+				<h2>Řešení na čas</h2>
+				<p style="height: 250px"></p>
+				Nejprve je třeba zvolit obtížnost v úvodním dialogu. V případě volby "Vlastní" je třeba projít ještě jedním dialogem, jeho funkce jsou popsány pomocí tooltipů přímo v okně. Proces trvá přibližně 4 sekundy. Po vygenerování se otevře sudoku připravené k řešení. V okně se lze pohybovat pomocí šipek nebo klikáním myši. V momentě, kdy je sudoku celé správně vyřešeno, se zastaví čas a dosažený výsledek se zaznamená. V ovládacím panelu jsou funkce, které řešení usnadní.
+				
+				<h3>Ovládací panel</h3>
+				<ul>
+					<li>Číslo - číslo, které je vyplněno v aktuálním políčku</li>
+					<li>Kandidáti - zaškrtněte příslušného kandidáta, aby se objevil v daném políčku; tuto funkci lze vykonat i pomocí klávesy Tab a potom psaním čísel z klávesnice</li>
+					<li>Barvy - klikáním na barevný čtvereček lze barvu přidat do políčka nebo ji z něj odebrat, checkbox vedle se používá ke skrytí dané barvy</li>
+					<li>Akronym - až 8 znaků dlouhý řetězec, který se zobrazí v políčku; vhodné pro krátké poznámky, které chce mít luštitel stále na očích</li>
+					<li>Poznámka - libovolně dlouhý text, který se zobrazí v ovládacím panelu vždy, pokud uživatel najede na políčko, ke kterému tento text patří; vhodné na detailnější popisy strategií, které nemusí mít luštitel stále na očích</li>
+				</ul>
+				<ul>
+					<li>Zabarvit dle kandidátů - podle toho, jaké kandidáty pro to které políčko uživatel vybral, tak se k nim automaticky doplní barvy</li>
+					<li>Odstranit barvu - otevře dialog, který umožňuje hromadně odstraňovat barvy: buď všechny z konkrétního políčka, nebo jednu vybranou z celého sudoku</li>
+					<li>Vzdát se - dosažený čas se nezapíše a uživatel dostane možnost vyluštit sudoku v režimu <a href="#">Trénink</a></li>
+				</ul>
+			</a>
+			<a name="ch4">
+				<h2>Trénink</h2>
+				<p style="height: 250px"></p>
+				Pokud je do režimu vstoupeno z úvodní obrazovky nebo z hlavního menu, otevře se dialog s možností vygenerování sudoku. V případě volby "Vlastní" je třeba projít ještě jedním dialogem, jeho funkce jsou popsány pomocí tooltipů přímo v okně. Proces trvá přibližně 4 sekundy. Po vygenerování se otevře sudoku připravené k řešení. V okně se lze pohybovat pomocí šipek nebo klikáním myši. V momentě, kdy je sudoku celé správně vyřešeno, se zastaví čas a dosažený výsledek se zaznamená. V ovládacím panelu jsou funkce, které řešení usnadní. Zároveň jsou ve druhé záložce obsaženy funkce, kdy počítač může při řešení pomoci buď úplným vyřešením, ukázáním následujícího kroku nebo ukázáním chyb.
+				<h3>Ovládací panel</h3>
+				<ul>
+					<li>Číslo - číslo, které je vyplněno v aktuálním políčku</li>
+					<li>Kandidáti - zaškrtněte příslušného kandidáta, aby se objevil v daném políčku; tuto funkci lze vykonat i pomocí klávesy Tab a potom psaním čísel z klávesnice</li>
+					<li>Barvy - klikáním na barevný čtvereček lze barvu přidat do políčka nebo ji z něj odebrat, checkbox vedle se používá ke skrytí dané barvy</li>
+					<li>Akronym - až 8 znaků dlouhý řetězec, který se zobrazí v políčku; vhodné pro krátké poznámky, které chce mít luštitel stále na očích</li>
+					<li>Poznámka - libovolně dlouhý text, který se zobrazí v ovládacím panelu vždy, pokud uživatel najede na políčko, ke kterému tento text patří; vhodné na detailnější popisy strategií, které nemusí mít luštitel stále na očích</li>
+				</ul>
+				<ul>
+					<li>Zabarvit dle kandidátů - podle toho, jaké kandidáty pro to které políčko uživatel vybral, tak se k nim automaticky doplní barvy</li>
+					<li>Odstranit barvu - otevře dialog, který umožňuje hromadně odstraňovat barvy: buď všechny z konkrétního políčka, nebo jednu vybranou z celého sudoku</li>
+					<li>Uložit - uloží rozpracované sudoku do databáze s tím, že je potom možné se k němu kdykoli vrátit pomocí menu Uživatel - Moje rozřešené sudoku</li>
+					<li>Restartovat - Vynuluje a vymaže vše tak, abyste sudoku luštili jakoby od začátku
+				</ul>
+				<h3>Pomoc počítače</h3>
+				Druhou záložkou ovládacího panelu je soubor funkcí sloužících jako záchranná brzda při řešení sudoku.
+				<ul>
+					<li>Vygenerovat kandidáty - vygeneruje seznam kandidátů pro políčka na základě zadaných a uživatelem doplněných čísel</li>
+					<li>Zkontrolovat - řekne uživateli, zda je sudoku bez chyby či nikoli</li>
+					<li>Ukázat chyby - červeně podbarví políčka, která jsou chybně vyplněna</li>
+					<li>Poradit strategii - řekne uživateli, jakou strategií by měl pokračovat</li>
+					<li>Ukázat krok - doplní za uživatele číslo a zároveň mu zdůvodní, proč tam patří</li>
+					<li>Vyřešit - vyřeší celé sudoku</li>
+				</ul>
+			</a>
+			<a name="ch5">
+				<h2>Vymazání databáze</h2>
+				<p style="height: 250px"></p>
+				Základní myšlenkou SuSolu je, že vše, co se v něm kdy řešilo, bude v budoucnu vždy přístupné pro další uživatele. Pokud přesto chcete databázi vymazat, je třeba jít do složky programu a vymazat odsud soubor <font face="courier new">data.db</font>. Tím se SuSol dostane do stavu, v jakém byl před prvním spuštěním. Ztratí se veškeré sudoku, dosažené časy i uživatelská data.
+			</a>
+			<p style="height: 300px"></p>
+			<span style="font-size: 10pt">&copy; Karel Jílek, 2015</span>
+			<br>&nbsp;<br>
 		</div>
+		
 	</body>
 </html>

@@ -545,6 +545,9 @@ class UserSelectDialog(QtGui.QDialog):
             if uzivatel in seznam_v_db:
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
                 return False
+            if len(uzivatel) == 0:
+                QtGui.QMessageBox.critical(None,"Chyba","Zadejte uživatelské jméno.")
+                return False
             db.execute("INSERT INTO uzivatele VALUES ('"+unicode(uzivatel)+"')")
             db.execute("INSERT INTO settings VALUES ('"+unicode(uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
 
@@ -622,6 +625,12 @@ class UserSelectDialog(QtGui.QDialog):
         tlacitka.accepted.connect(self.acceptDialog)
         tlacitka.rejected.connect(self.rejectDialog)
 
+        if len(seznam_v_db) == 0:
+            self.rb2.setDisabled(True)
+            self.rb1.setChecked(True)
+            self.entry.setDisabled(False)
+            self.entry.setFocus()
+
 class UserSelectDialog2(QtGui.QDialog):
 
     def acceptDialog(self):
@@ -631,6 +640,9 @@ class UserSelectDialog2(QtGui.QDialog):
             seznam_v_db = DB2list(db.execute("SELECT * FROM uzivatele").fetchall())
             if okno.uzivatel in seznam_v_db:
                 QtGui.QMessageBox.critical(None,"Chyba","Toto uživatelské jméno již existuje. Zvol si jiné.")
+                return False
+            if len(uzivatel) == 0:
+                QtGui.QMessageBox.critical(None,"Chyba","Zadejte uživatelské jméno.")
                 return False
             db.execute("INSERT INTO uzivatele VALUES ('"+unicode(okno.uzivatel)+"')")
             db.execute("INSERT INTO settings VALUES ('"+unicode(okno.uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")

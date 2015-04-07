@@ -8,7 +8,7 @@ from time import time, localtime, strftime
 from sqlite3 import connect
 import sys
 import solver2
-import generator2
+import generator
 import webbrowser
 
 db = connect("data.db")
@@ -43,8 +43,11 @@ class VlastniSudokuDialog(QtGui.QDialog):
 
         self.label.setText("Minimální počet zadaných čísel")
         self.cisla.setRange(0,80)
+        self.cisla.setToolTip("Počet čísel, které po vygenerování budou předvyplněna")
         self.jednoznacne.setText("Jednoznačné řešení")
+        self.jednoznacne.setToolTip("Sudoku bude mít právě jedno řešení")
         self.bf.setText("Použít hrubou sílu při testu jednoznačnosti")
+        self.bf.setToolTip("Při testu jednoznačnosti se při řešení použije hrubá síla\nVýsledkem je trochu těžší sudoku")
 
         self.jednoznacne.move(8,30)
         self.bf.move(8,80)
@@ -1512,7 +1515,7 @@ class TimeSetDialog(QtGui.QDialog):
 class GeneratorDialog(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator2.generate(limit=40,bf=False)
+        okno.zadani = generator.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (lehké)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1521,7 +1524,7 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zobrazElementy("reseni")
 
     def stredniClick(self):
-        okno.zadani = generator2.generate(bf=False)
+        okno.zadani = generator.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (střední)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1530,7 +1533,7 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zobrazElementy("reseni")
 
     def tezkeClick(self):
-        okno.zadani = generator2.generate()
+        okno.zadani = generator.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (těžké)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1543,7 +1546,7 @@ class GeneratorDialog(QtGui.QDialog):
         dialog.exec_()
 
         if dialog.isAccepted:
-            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadani = generator.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
             okno.zadaniBackup = deepcopy(okno.zadani)
             okno.puvod = "gen. (vlastní)"
             db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1616,7 +1619,7 @@ class GeneratorDialog(QtGui.QDialog):
 class GeneratorDialog2(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator2.generate(limit=40,bf=False)
+        okno.zadani = generator.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (lehké)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1626,7 +1629,7 @@ class GeneratorDialog2(QtGui.QDialog):
 
 
     def stredniClick(self):
-        okno.zadani = generator2.generate(bf=False)
+        okno.zadani = generator.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (střední)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1635,7 +1638,7 @@ class GeneratorDialog2(QtGui.QDialog):
         okno.zobrazElementy("na_cas")
 
     def tezkeClick(self):
-        okno.zadani = generator2.generate()
+        okno.zadani = generator.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (těžké)"
         db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1648,7 +1651,7 @@ class GeneratorDialog2(QtGui.QDialog):
         dialog.exec_()
 
         if dialog.isAccepted:
-            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadani = generator.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
             okno.zadaniBackup = deepcopy(okno.zadani)
             okno.puvod = "gen. (vlastní)"
             db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
@@ -1721,19 +1724,19 @@ class GeneratorDialog2(QtGui.QDialog):
 class GeneratorDialog3(QtGui.QDialog):
 
     def lehkeClick(self):
-        okno.zadani = generator2.generate(limit=40,bf=False)
+        okno.zadani = generator.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (lehké)"
         self.close()
 
     def stredniClick(self):
-        okno.zadani = generator2.generate(bf=False)
+        okno.zadani = generator.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (střední)"
         self.close()
 
     def tezkeClick(self):
-        okno.zadani = generator2.generate()
+        okno.zadani = generator.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (těžké)"
         self.close()
@@ -1743,7 +1746,7 @@ class GeneratorDialog3(QtGui.QDialog):
         dialog.exec_()
 
         if dialog.isAccepted:
-            okno.zadani = generator2.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
+            okno.zadani = generator.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
             okno.zadaniBackup = deepcopy(okno.zadani)
             okno.puvod = "gen. (vlastní)"
             self.close()
@@ -3167,6 +3170,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumber.addItem("8")
         self.mainNumber.addItem("9")
         self.mainNumber.activated.connect(self.mainNumberChosen)
+        self.mainNumber.setToolTip("Číslo v políčku")
 
         self.mainNumberLabel = QtGui.QLabel()
         self.mainNumberLabel.setText("Číslo")
@@ -3229,6 +3233,15 @@ class SuSol(QtGui.QMainWindow):
         self.cand9.setMinimumHeight(30)
         self.cand9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.cand9.stateChanged.connect(self.candChange9)
+        self.cand1.setToolTip("Kandidát 1")
+        self.cand2.setToolTip("Kandidát 2")
+        self.cand3.setToolTip("Kandidát 3")
+        self.cand4.setToolTip("Kandidát 4")
+        self.cand5.setToolTip("Kandidát 5")
+        self.cand6.setToolTip("Kandidát 6")
+        self.cand7.setToolTip("Kandidát 7")
+        self.cand8.setToolTip("Kandidát 8")
+        self.cand9.setToolTip("Kandidát 9")
 
         self.color1 = QtGui.QPushButton()
         self.color1.setStyleSheet("background-color: "+self.barvyBarev[0]+"; color: #000000")
@@ -3284,6 +3297,15 @@ class SuSol(QtGui.QMainWindow):
         self.color9.setMaximumWidth(20)
         self.color9.setCheckable(True)
         self.color9.clicked.connect(self.click9)
+        self.color1.setToolTip("Obarvit políčko barvou 1")
+        self.color2.setToolTip("Obarvit políčko barvou 2")
+        self.color3.setToolTip("Obarvit políčko barvou 3")
+        self.color4.setToolTip("Obarvit políčko barvou 4")
+        self.color5.setToolTip("Obarvit políčko barvou 5")
+        self.color6.setToolTip("Obarvit políčko barvou 6")
+        self.color7.setToolTip("Obarvit políčko barvou 7")
+        self.color8.setToolTip("Obarvit políčko barvou 8")
+        self.color9.setToolTip("Obarvit políčko barvou 9")
 
         self.color1check1 = QtGui.QCheckBox()
         self.color1check1.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3321,6 +3343,15 @@ class SuSol(QtGui.QMainWindow):
         self.color1check9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color1check9.setChecked(True)
         self.color1check9.stateChanged.connect(self.colorChange9)
+        self.color1check1.setToolTip("Zobrazit/skrýt barvu 1")
+        self.color1check2.setToolTip("Zobrazit/skrýt barvu 2")
+        self.color1check3.setToolTip("Zobrazit/skrýt barvu 3")
+        self.color1check4.setToolTip("Zobrazit/skrýt barvu 4")
+        self.color1check5.setToolTip("Zobrazit/skrýt barvu 5")
+        self.color1check6.setToolTip("Zobrazit/skrýt barvu 6")
+        self.color1check7.setToolTip("Zobrazit/skrýt barvu 7")
+        self.color1check8.setToolTip("Zobrazit/skrýt barvu 8")
+        self.color1check9.setToolTip("Zobrazit/skrýt barvu 9")
 
         self.shortNoteLabel = QtGui.QLabel()
         self.shortNoteLabel.setText("Akronym")
@@ -3330,6 +3361,7 @@ class SuSol(QtGui.QMainWindow):
         self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.shortNoteBtn.setText("&Editovat")
         self.shortNoteBtn.clicked.connect(self.editShortNote)
+        self.shortNoteBtn.setToolTip("Upravit akronym")
 
         self.shortNoteTB = QtGui.QLineEdit()
         self.shortNoteTB.setDisabled(True)
@@ -3344,6 +3376,7 @@ class SuSol(QtGui.QMainWindow):
         self.longNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.longNoteBtn.setText("E&ditovat")
         self.longNoteBtn.clicked.connect(self.editLongNote)
+        self.longNoteBtn.setToolTip("Upravit poznámku")
 
         self.longNoteTB = QtGui.QTextEdit()
         self.longNoteTB.setDisabled(True)
@@ -3364,57 +3397,68 @@ class SuSol(QtGui.QMainWindow):
         self.casStartStop.setStyleSheet("background-color: #ff0000; color: #ffffff")
         self.casStartStop.setText("&Možnosti")
         self.casStartStop.setMenu(self.casMenu)
+        self.casStartStop.setToolTip("Úprava času")
 
 
         self.odstranitBarvu = QtGui.QPushButton()
         self.odstranitBarvu.setFocusPolicy(QtCore.Qt.NoFocus)
         self.odstranitBarvu.setText("&Odstranit barvu...")
         self.odstranitBarvu.clicked.connect(self.odstranitBarvuClick)
+        self.odstranitBarvu.setToolTip("Otevře dialog s možností hromadného odstraňování barev")
 
         self.ulozitBtn = QtGui.QPushButton()
         self.ulozitBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ulozitBtn.setText("&Uložit...")
         self.ulozitBtn.clicked.connect(self.ulozitClick)
+        self.ulozitBtn.setToolTip("Uloží sudoku do databáze rozřešených")
 
         self.zabarvitDleKandidatu = QtGui.QPushButton()
         self.zabarvitDleKandidatu.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zabarvitDleKandidatu.setText("&Zabarvit dle kandidátů")
         self.zabarvitDleKandidatu.clicked.connect(self.zabarvitDleKandidatuClick)
+        self.zabarvitDleKandidatu.setToolTip("Zabarvit všechna políčka dle současných kandidátů")
 
         self.restartovatBtn = QtGui.QPushButton()
         self.restartovatBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.restartovatBtn.setText("&Restartovat")
         self.restartovatBtn.clicked.connect(self.restartovatClick)
+        self.restartovatBtn.setToolTip("Vymaže všechny doplněné údaje a vynuluje čas")
 
         self.vygenerovatKandidatyBtn = QtGui.QPushButton()
         self.vygenerovatKandidatyBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.vygenerovatKandidatyBtn.setText("Vygenerovat kandidáty")
         self.vygenerovatKandidatyBtn.clicked.connect(self.vygenerovatKandidaty)
+        self.vygenerovatKandidatyBtn.setToolTip("Vygeneruje kandidáty dle zadaných čísel")
 
         self.vyresitBtn = QtGui.QPushButton()
         self.vyresitBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.vyresitBtn.setText("Vyřešit")
         self.vyresitBtn.clicked.connect(self.vyresit)
+        self.vyresitBtn.setToolTip("Vyřeší sudoku")
 
         self.zkontrolovatBtn = QtGui.QPushButton()
         self.zkontrolovatBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zkontrolovatBtn.setText("Zkontrolovat")
         self.zkontrolovatBtn.clicked.connect(self.zkontrolovat)
+        self.zkontrolovatBtn.setToolTip("Zkontroluje, zda je sudoku bez chyb")
 
         self.ukazatChybyBtn = QtGui.QPushButton()
         self.ukazatChybyBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ukazatChybyBtn.setText("Ukázat chyby")
         self.ukazatChybyBtn.clicked.connect(self.ukazatChyby)
+        self.ukazatChybyBtn.setToolTip("Zkontroluje, zda je sudoku bez chyb a případné chyby zobrazí")
 
         self.poraditStrategiiBtn = QtGui.QPushButton()
         self.poraditStrategiiBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.poraditStrategiiBtn.setText("Poradit strategii")
         self.poraditStrategiiBtn.clicked.connect(self.poraditStrategii)
+        self.poraditStrategiiBtn.setToolTip("Poradí, jakou strategii by měl uživatel aplikovat pro vyluštění dalšího čísla")
 
         self.ukazatKrokBtn = QtGui.QPushButton()
         self.ukazatKrokBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ukazatKrokBtn.setText("Ukázat krok")
         self.ukazatKrokBtn.clicked.connect(self.ukazatKrok)
+        self.ukazatKrokBtn.setToolTip("Ukáže, kam patří doplnit následující číslo, a řekne proč")
 
 
 
@@ -3512,6 +3556,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumber.addItem("8")
         self.mainNumber.addItem("9")
         self.mainNumber.activated.connect(self.mainNumberChosen)
+        self.mainNumber.setToolTip("Číslo v políčku")
 
         self.mainNumberLabel = QtGui.QLabel()
         self.mainNumberLabel.setText("Číslo")
@@ -3574,6 +3619,15 @@ class SuSol(QtGui.QMainWindow):
         self.cand9.setMinimumHeight(30)
         self.cand9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.cand9.stateChanged.connect(self.candChange9)
+        self.cand1.setToolTip("Kandidát 1")
+        self.cand2.setToolTip("Kandidát 2")
+        self.cand3.setToolTip("Kandidát 3")
+        self.cand4.setToolTip("Kandidát 4")
+        self.cand5.setToolTip("Kandidát 5")
+        self.cand6.setToolTip("Kandidát 6")
+        self.cand7.setToolTip("Kandidát 7")
+        self.cand8.setToolTip("Kandidát 8")
+        self.cand9.setToolTip("Kandidát 9")
 
         self.color1 = QtGui.QPushButton()
         self.color1.setStyleSheet("background-color: "+self.barvyBarev[0]+"; color: #000000")
@@ -3629,6 +3683,15 @@ class SuSol(QtGui.QMainWindow):
         self.color9.setMaximumWidth(20)
         self.color9.setCheckable(True)
         self.color9.clicked.connect(self.click9)
+        self.color1.setToolTip("Obarvit políčko barvou 1")
+        self.color2.setToolTip("Obarvit políčko barvou 2")
+        self.color3.setToolTip("Obarvit políčko barvou 3")
+        self.color4.setToolTip("Obarvit políčko barvou 4")
+        self.color5.setToolTip("Obarvit políčko barvou 5")
+        self.color6.setToolTip("Obarvit políčko barvou 6")
+        self.color7.setToolTip("Obarvit políčko barvou 7")
+        self.color8.setToolTip("Obarvit políčko barvou 8")
+        self.color9.setToolTip("Obarvit políčko barvou 9")
 
         self.color1check1 = QtGui.QCheckBox()
         self.color1check1.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3666,6 +3729,15 @@ class SuSol(QtGui.QMainWindow):
         self.color1check9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.color1check9.setChecked(True)
         self.color1check9.stateChanged.connect(self.colorChange9)
+        self.color1check1.setToolTip("Zobrazit/skrýt barvu 1")
+        self.color1check2.setToolTip("Zobrazit/skrýt barvu 2")
+        self.color1check3.setToolTip("Zobrazit/skrýt barvu 3")
+        self.color1check4.setToolTip("Zobrazit/skrýt barvu 4")
+        self.color1check5.setToolTip("Zobrazit/skrýt barvu 5")
+        self.color1check6.setToolTip("Zobrazit/skrýt barvu 6")
+        self.color1check7.setToolTip("Zobrazit/skrýt barvu 7")
+        self.color1check8.setToolTip("Zobrazit/skrýt barvu 8")
+        self.color1check9.setToolTip("Zobrazit/skrýt barvu 9")
 
         self.shortNoteLabel = QtGui.QLabel()
         self.shortNoteLabel.setText("Akronym")
@@ -3675,6 +3747,7 @@ class SuSol(QtGui.QMainWindow):
         self.shortNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.shortNoteBtn.setText("&Editovat")
         self.shortNoteBtn.clicked.connect(self.editShortNote)
+        self.shortNoteBtn.setToolTip("Upravit akronym")
 
         self.shortNoteTB = QtGui.QLineEdit()
         self.shortNoteTB.setDisabled(True)
@@ -3689,6 +3762,7 @@ class SuSol(QtGui.QMainWindow):
         self.longNoteBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.longNoteBtn.setText("E&ditovat")
         self.longNoteBtn.clicked.connect(self.editLongNote)
+        self.longNoteBtn.setToolTip("Upravit poznámku")
 
         self.longNoteTB = QtGui.QTextEdit()
         self.longNoteTB.setDisabled(True)
@@ -3715,6 +3789,7 @@ class SuSol(QtGui.QMainWindow):
         self.odstranitBarvu.setFocusPolicy(QtCore.Qt.NoFocus)
         self.odstranitBarvu.setText("&Odstranit barvu...")
         self.odstranitBarvu.clicked.connect(self.odstranitBarvuClick)
+        self.odstranitBarvu.setToolTip("Otevře dialog s možností hromadného odstraňování barev")
 
         self.nastaveniBarev = QtGui.QPushButton()
         self.nastaveniBarev.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3725,11 +3800,14 @@ class SuSol(QtGui.QMainWindow):
         self.zabarvitDleKandidatu.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zabarvitDleKandidatu.setText("&Zabarvit dle kandidátů")
         self.zabarvitDleKandidatu.clicked.connect(self.zabarvitDleKandidatuClick)
+        self.zabarvitDleKandidatu.setToolTip("Zabarvit všechna políčka dle současných kandidátů")
 
         self.restartovatBtn = QtGui.QPushButton()
         self.restartovatBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.restartovatBtn.setText("&Vzdát se")
         self.restartovatBtn.clicked.connect(self.vzdatSe)
+        self.restartovatBtn.setToolTip("Ukončit soutěžní režim a dořešit v tréninkovém režimu")
+
 
         self.vygenerovatKandidatyBtn = QtGui.QPushButton()
         self.vygenerovatKandidatyBtn.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -3817,8 +3895,8 @@ class SuSol(QtGui.QMainWindow):
         vBoxlayout.addWidget(self.longNoteTB,7,4,6,7)
         vBoxlayout.addWidget(self.odstranitBarvu,14,0,1,11)
         vBoxlayout.addWidget(self.zabarvitDleKandidatu,13,0,1,11)
-        vBoxlayout.addWidget(self.nastaveniBarev,15,0,1,11)
-        vBoxlayout.addWidget(self.restartovatBtn,16,0,1,11)
+        #vBoxlayout.addWidget(self.nastaveniBarev,15,0,1,11)
+        vBoxlayout.addWidget(self.restartovatBtn,15,0,1,11)
         self.tab1.setLayout(vBoxlayout)
 
         vBoxlayout = QtGui.QGridLayout()
@@ -3944,6 +4022,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainNumber.addItem("8")
         self.mainNumber.addItem("9")
         self.mainNumber.activated.connect(self.mainNumberChosenZadani)
+        self.mainNumber.setToolTip("Číslo v políčku")
 
         self.mainNumberLabel = QtGui.QLabel()
         self.mainNumberLabel.setText("Číslo")
@@ -4146,21 +4225,25 @@ class SuSol(QtGui.QMainWindow):
         self.zkontrolovatJednoznacnostBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.zkontrolovatJednoznacnostBtn.setText("&Zkontrolovat jednoznačnost")
         self.zkontrolovatJednoznacnostBtn.clicked.connect(self.zkontrolovatJednoznacnost)
+        self.zkontrolovatJednoznacnostBtn.setToolTip("Zkontroluje, zda má sudoku právě jedno řešení")
 
         self.hotovoBtn = QtGui.QPushButton()
         self.hotovoBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.hotovoBtn.setText("&Hotovo")
         self.hotovoBtn.clicked.connect(self.hotovo)
+        self.hotovoBtn.setToolTip("Zkontroluje sudoku, uloží jej a přepne do tréninkového režimu")
 
         self.smazatVseBtn = QtGui.QPushButton()
         self.smazatVseBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.smazatVseBtn.setText("&Smazat všechna čísla")
         self.smazatVseBtn.clicked.connect(self.smazatVsechnaCisla)
+        self.smazatVseBtn.setToolTip("Vymaže všechna zadaná čísla z aktuálního sudoku")
 
         self.jinyZpusob = QtGui.QPushButton()
         self.jinyZpusob.setFocusPolicy(QtCore.Qt.NoFocus)
         self.jinyZpusob.setText("&Jiné metody zadávání...")
         self.jinyZpusob.clicked.connect(self.jineMetody)
+        self.jinyZpusob.setToolTip("Otevře dialog s možností vygenerovat sudoku/načíst sudoku z databáze")
 
 
         self.poleLabel = QtGui.QLabel("ABCDEFGHI"[self.curY]+str(self.curX+1))
@@ -4203,8 +4286,7 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def wb4click(self):
-        # todo()
-        pass
+        self.otevritCelyManual()
 
     def welcomeScreen(self):
         self.welcomeButton1 = QtGui.QPushButton(self)
@@ -4219,6 +4301,10 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton2.clicked.connect(self.wb2click)
         self.welcomeButton3.clicked.connect(self.wb3click)
         self.welcomeButton4.clicked.connect(self.wb4click)
+        self.welcomeButton1.setToolTip("Přejít do režimu řešení na čas")
+        self.welcomeButton2.setToolTip("Přejít do režimu zadávání sudoku")
+        self.welcomeButton3.setToolTip("Přejít do tréninkového režimu")
+        self.welcomeButton4.setToolTip("Otevřít manuál")
         self.welcomeButton1.show()
         self.welcomeButton2.show()
         self.welcomeButton3.show()
@@ -4262,6 +4348,11 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton2.hide()
         self.welcomeButton3.hide()
         self.welcomeButton4.hide()
+
+    def about(self):
+        QtGui.QMessageBox.information(None,"O programu",
+            "SuSol (SUdoku SOLver) je program, který vznikl jakožto maturitní práce Karla Jílka, studenta Gymnázia Jana Keplera v Praze. Původně mělo jít pouze o demonstraci algoritmu, který dokáže sudoku vyřešit a vygenerovat. Nakonec vznikla tato aplikace, která je určena všem nadšeným luštitelům.\n\nKarel Jílek, 2015"
+        )
 
     def domu(self):
         if self.rezim != "welcome_screen":
@@ -4550,7 +4641,7 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu2 = self.menuBar().addMenu("&Nápověda")
         self.mainMenu4 = self.menuBar().addMenu("&Uživatel:")
 
-        self.mainMenu1.addAction("O programu")
+        self.mainMenu1.addAction("O programu",self.about)
         self.mainMenu1.addSeparator()
         self.mainMenu1.addAction("Konec\tAlt+F4",self.quit)
 
@@ -4559,12 +4650,12 @@ class SuSol(QtGui.QMainWindow):
         self.mainMenu3.addAction("Řešení na čas", self.rezimReseniNaCas)
         self.mainMenu3.addAction("Trénink", self.rezimReseniTrenink)
 
-        self.mainMenu2.addAction("Uživatelský manuál\tF1")
+        self.mainMenu2.addAction("Uživatelský manuál\tF1",self.otevritCelyManual)
         self.mainMenu2.addAction("Nápověda k aktuálnímu oknu")
 
         self.mainMenu4.addAction("Změnit uživatele...", self.zmenitUzivatele)
         self.mainMenu4.addSeparator()
-        self.mainMenu4.addAction("Moje sudoku...", self.mojeSudokuClick)
+        self.mainMenu4.addAction("Moje rozřešené sudoku...", self.mojeSudokuClick)
         self.mainMenu4.addAction("Moje nastavení...",self.mojeNastaveniClick)
         self.mainMenu41 = self.mainMenu4.addMenu("Výsledky")
         self.mainMenu41.addAction("Lehké...",self.vysledkyClickLehke)

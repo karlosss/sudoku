@@ -1,4 +1,3 @@
-from __future__ import print_function
 from time import time
 from copy import deepcopy
 from random import shuffle
@@ -8,15 +7,6 @@ logovatPostup = True
 ukazatCas = True
 postup = []
 mapa = [[],[]]
-
-# class Null:
-#     def write(self,x):
-#         pass
-
-#sys.stdout = Null()
-
-#syntax postupu:
-#cand - vygenerovat vsechny kandidaty (ve vsech nevyplnenych polickach cisla 1 az 9 bez filtrace)
 
 def generuj_mapu(cand):
     mapa = [
@@ -213,35 +203,25 @@ def brute_force(cand, mode):
     while True:
         iterace = iterace + 1
         uzel = najdi_uzel(cand)
-        # print("")
-        # print("iterace: "+str(iterace))
-        # print("hloubka: "+str(hloubka))
-        # print("cesta: "+str(cesta))
-        # print("uzel: "+str(uzel))
         if cesta[hloubka] < len(cand[uzel[0]][uzel[1]]):
             cand[uzel[0]][uzel[1]] = [cand[uzel[0]][uzel[1]][cesta[hloubka]]]
         else:
             hloubka = hloubka - 1
             if hloubka == -1:
-                # print("Sudoku nema reseni!")
                 break
             cesta[hloubka] = cesta[hloubka] + 1
             cand = deepcopy(mezipamet[hloubka])
             del(cesta[hloubka+1])
             del(mezipamet[hloubka+1])
-            # print("FAIL, vracim se zpatky a zkusim jine cislo.")
             continue
         cand = kontrola(cand)
         if cand == False:
             cand = deepcopy(mezipamet[hloubka])
             cesta[hloubka] = cesta[hloubka] + 1
-            # print("FAIL, zkusim jine cislo.")
         else:
             uzel = najdi_uzel(cand)
             if uzel == False:
                 reseni.append(transform_solution(cand))
-                # print("reseni nalezeno!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print(cand) #nebo hotovo a break pro 1. reseni
                 cand = deepcopy(mezipamet[hloubka])
                 cesta[hloubka] = cesta[hloubka] + 1
                 if mode == len(reseni):
@@ -282,18 +262,12 @@ def solve(raw, mode=0, bf=True, duration=False, logPostup=False):
 
     test = kontrola_vstupu(raw)
     if test == False:
-        print("chybny vstup")
-        print(time()-start)
         return []
 
     candidates = generate_candidates(raw)
     mapa = generuj_mapu(candidates)
-    # for i in mapa:
-    #     print(i)
     candidates = kontrola(candidates)
     if candidates == False:
-        print("neresitelny vstup")
-        print(time()-start)
         return []
 
     totLen = 0
@@ -301,10 +275,6 @@ def solve(raw, mode=0, bf=True, duration=False, logPostup=False):
         for j in range(0,9,1):
             totLen = totLen + len(candidates[i][j])
     if totLen == 81:
-        #print("vyreseno bez BF")
-        for i in range(0,len(postup),1):
-            print(i,postup[i])
-        print(time()-start)
         return [transform_solution(candidates)]
     logovatPostup = False
     postup.append("BF")
@@ -316,14 +286,7 @@ def solve(raw, mode=0, bf=True, duration=False, logPostup=False):
             mode = abs(mode)
         candidates = brute_force(candidates, mode)
         if candidates == False:
-            print("po BF neresitelny vstup")
-            print(time()-start)
             return []
-        print(time()-start)
-        for i in range(0,len(postup),1):
-            print(i,postup[i])
         return candidates
     else:
-        #print("bez BF neresitelne zadani")
-        print(time()-start)
         return []

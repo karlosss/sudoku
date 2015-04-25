@@ -4,7 +4,7 @@ Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence s
 
 - **Ukázka:** [screenshoty](http://abc), [ukázkové video](http://abc/)
 - **Download:** aktuální release [zde](https://github.com/karlosss/sudoku/archive/SuSol.zip)
-- **Dokumentace:** [uživatelská i programátorská dokumentace](http://abc) (link na PDFko na githubu)
+- **Dokumentace:** [popis algoritmů](https://github.com/karlosss/sudoku/blob/master/anotace.pdf) (pdf),  [programátorská dokumentace](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf) (pdf), [manuál](https://github.com/karlosss/sudoku/blob/master/man/manual.html) (html)
 - **Repozitář:** [kukas/Lightbeats](http://github.com/kukas/Lightbeats) + [fork](http://github.com/gjkcz/Lightbeats) v archivu maturitních prací
 - **Autor:** Jméno Přijmení, případně@mail.com, @twitter, atd.
 - **Maturitní práce 2014/15** na [GJK](https://github.com/gjkcz/gjkcz)

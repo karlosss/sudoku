@@ -1,4 +1,4 @@
-# Název projektu
+# SuSol
 
 Anotace projektu zhruba na jeden řádek. (patří i do description tohoto github repozitáře)
 

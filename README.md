@@ -6,9 +6,8 @@ Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence s
 - **Download:** aktuální release [zde](https://github.com/karlosss/sudoku/archive/SuSol.zip)
 - **Dokumentace:** [popis algoritmů](https://github.com/karlosss/sudoku/blob/master/anotace.pdf) (pdf),  [programátorská dokumentace](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf) (pdf), [manuál](https://github.com/karlosss/sudoku/blob/master/man/manual.html) (html)
 - **Repozitář:** [karlosss/sudoku](https://github.com/karlosss/sudoku) + [fork](http://github.com/gjkcz/sudoku) v archivu maturitních prací
-- **Autor:** Jméno Přijmení, případně@mail.com, @twitter, atd.
+- **Autor:** Karel Jílek
 - **Maturitní práce 2014/15** na [GJK](https://github.com/gjkcz/gjkcz)
-- Autor nezveřejnil zdrojové kódy, pro přístup ho můžete zkusit kontaktovat. (uvede mkartoteka a space-challenge - těm udělám gjkcz/repo-public, kde bude jen tento readme)
 
 ## Dokumentace pro uživatele
 (Jsem BFU a chci si tohle spustit a používat.)

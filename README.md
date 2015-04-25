@@ -1,6 +1,6 @@
 # SuSol
 
-Anotace projektu zhruba na jeden řádek. (patří i do description tohoto github repozitáře)
+Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence sudoku
 
 - **Nasazená verze:** [link na web](http://abc/)  
 - **Ukázka:** [screenshoty](http://abc), [ukázkové video](http://abc/)

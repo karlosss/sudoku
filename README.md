@@ -2,9 +2,8 @@
 
 Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence sudoku
 
-- **Nasazená verze:** [link na web](http://abc/)  
 - **Ukázka:** [screenshoty](http://abc), [ukázkové video](http://abc/)
-- **Download:** [link na release](https://github.com/Dalimil/Kepler-GJK/releases), [případně odkaz na Google Play](http://abc/) apod
+- **Download:** [zde](https://github.com/karlosss/sudoku/releases)
 - **Dokumentace:** [uživatelská i programátorská dokumentace](http://abc) (link na PDFko na githubu)
 - **Repozitář:** [kukas/Lightbeats](http://github.com/kukas/Lightbeats) + [fork](http://github.com/gjkcz/Lightbeats) v archivu maturitních prací
 - **Autor:** Jméno Přijmení, případně@mail.com, @twitter, atd.

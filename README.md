@@ -16,8 +16,8 @@ Intuitivní ovládání vás (snad) dovede k cíli :). Kdyby ne, v aplikaci je o
 
 Další informace [zde](https://github.com/karlosss/sudoku/blob/master/anotace.pdf).
 ### Instalace
-Na Linuxu nainstalovat balíčky "pyqt4-common", "python2-pyqt4" a "python2"
-Na Windows nainstalovat Python [zde](http://www.python.org/download/releases/2.7) a PyQt dle návodu [zde](http://riverbankcomputing.co.uk/software/pyqt/download)
+- Na Linuxu nainstalovat balíčky "pyqt4-common", "python2-pyqt4" a "python2"
+- Na Windows nainstalovat Python [zde](http://www.python.org/download/releases/2.7) a PyQt dle návodu [zde](http://riverbankcomputing.co.uk/software/pyqt/download)
 
 ### Spuštění
 Pythonem spustit SuSol.py

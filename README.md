@@ -39,15 +39,15 @@ Další informace [zde](https://github.com/karlosss/sudoku/blob/master/dokumenta
 Úvodní obrazovka
 ![Alt text](https://github.com/karlosss/sudoku/blob/master/screenshoty/screen1.png)
 
-ASDF
+Zadávání sudoku
 ![Alt text](https://github.com/karlosss/sudoku/blob/master/screenshoty/screen2.png)
 
-ASDF
+Řešení sudoku s použití podbarvování
 ![Alt text](https://github.com/karlosss/sudoku/blob/master/screenshoty/screen3.png)
 
-ASDF
+Vyřešené sudoku s pomocí počítače
 ![Alt text](https://github.com/karlosss/sudoku/blob/master/screenshoty/screen4.png)
 
-ASDF
+Výběr z databáze
 ![Alt text](https://github.com/karlosss/sudoku/blob/master/screenshoty/screen5.png)
 

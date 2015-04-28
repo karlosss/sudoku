@@ -36,5 +36,5 @@ Kód je rozdělený na solver, generátor a všechno ostatní (GUI, databáze a 
 Další informace [zde](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf).
 
 ## Screenshoty, obrázky
-[screenshot]: https://github.com/karlosss/sudoku/blob/master/screen1.png
+![Alt text](https://github.com/karlosss/sudoku/blob/master/screen1.png "Optional title")
 

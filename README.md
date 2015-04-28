@@ -2,7 +2,7 @@
 
 Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence sudoku
 
-- **Ukázka:** [screenshoty](http://abc), [ukázkové video](http://abc/)
+- **Ukázka:** [screenshoty](https://github.com/karlosss/sudoku/blob/master/screen1.png)
 - **Download:** aktuální release [zde](https://github.com/karlosss/sudoku/archive/SuSol.zip)
 - **Dokumentace:** [popis algoritmů](https://github.com/karlosss/sudoku/blob/master/anotace.pdf) (pdf),  [programátorská dokumentace](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf) (pdf), [manuál](https://github.com/karlosss/sudoku/blob/master/man/manual.html) (html)
 - **Repozitář:** [karlosss/sudoku](https://github.com/karlosss/sudoku) + [fork](http://github.com/gjkcz/sudoku) v archivu maturitních prací
@@ -36,5 +36,9 @@ Kód je rozdělený na solver, generátor a všechno ostatní (GUI, databáze a 
 Další informace [zde](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf).
 
 ## Screenshoty, obrázky
-(Obrázek vydá za tisíc bajtů. Aspoň dva.)
+(https://github.com/karlosss/sudoku/blob/master/screen1.png)
+(https://github.com/karlosss/sudoku/blob/master/screen2.png)
+(https://github.com/karlosss/sudoku/blob/master/screen3.png)
+(https://github.com/karlosss/sudoku/blob/master/screen4.png)
+(https://github.com/karlosss/sudoku/blob/master/screen5.png)
 

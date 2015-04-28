@@ -2,7 +2,7 @@
 
 Solver a generátor sudoku, implementovaný do aplikace pro všechny nadšence sudoku
 
-- **Ukázka:** [screenshoty](https://github.com/karlosss/sudoku/blob/master/screen1.png)
+- **Ukázka:** [screenshoty](https://github.com/karlosss/sudoku/blob/master/screenshoty)
 - **Download:** aktuální release [zde](https://github.com/karlosss/sudoku/archive/SuSol.zip)
 - **Dokumentace:** [popis algoritmů](https://github.com/karlosss/sudoku/blob/master/anotace.pdf) (pdf),  [programátorská dokumentace](https://github.com/karlosss/sudoku/blob/master/dokumentace.pdf) (pdf), [manuál](https://github.com/karlosss/sudoku/blob/master/man/manual.html) (html)
 - **Repozitář:** [karlosss/sudoku](https://github.com/karlosss/sudoku) + [fork](http://github.com/gjkcz/sudoku) v archivu maturitních prací

@@ -121,7 +121,8 @@ class VysledkyDialog(QtGui.QDialog):
             aktivniID = self.tabulka.item(cisloRadku,0).text()
         except AttributeError:
             aktivniID = 1
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id="+str(aktivniID)))[0])
+        # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id="+str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id=?",str(aktivniID)))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -231,7 +232,8 @@ class LoadFromDBDialog(QtGui.QDialog):
             aktivniID = self.tabulka.item(cisloRadku,0).text()
         except AttributeError:
             aktivniID = 1
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id="+str(aktivniID)))[0])
+        # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id="+str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id=?",str(aktivniID)))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -332,7 +334,8 @@ class LoadFromDBDialog2(QtGui.QDialog):
         except AttributeError:
             aktivniID = 1
 
-        load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0]
+        # load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0]
+        load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0]
 
         okno.zadani = string2sudoku(load[0])
         okno.reseni = string2sudoku(load[1])
@@ -356,8 +359,10 @@ class LoadFromDBDialog2(QtGui.QDialog):
         except AttributeError:
             aktivniID = 1
 
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
-        reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
+        # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0])
+        # reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
+        reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -368,14 +373,17 @@ class LoadFromDBDialog2(QtGui.QDialog):
     def __init__(self):
         super(LoadFromDBDialog2,self).__init__()
 
-        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        # seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",unicode(okno.uzivatel)))
         db.commit()
 
         pole = []
 
         for i in range(0,len(seznam_z_db),1):
-            zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
-            reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
+            # zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
+            zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",str(seznam_z_db[i][0])))[0][0]
+            # reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
+            reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",str(seznam_z_db[i][0])))[0][0]
             db.commit()
             pole.append([])
 
@@ -450,7 +458,8 @@ class DBInsertDialog(QtGui.QDialog):
 
     def acceptDialog(self):
         identifikator = unicode(self.entry.text())
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode(identifikator)+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode(identifikator)+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)",[unicode(identifikator),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
 
@@ -493,7 +502,8 @@ class DBInsertDialog2(QtGui.QDialog):
 
     def acceptDialog(self):
         identifikator = unicode(self.entry.text())
-        db.execute("INSERT INTO sudoku_rozreseno VALUES(NULL,'"+unicode(okno.uzivatel)+"','"+unicode(identifikator)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(sudoku2string(okno.reseni))+"','"+unicode(cand2string(okno.kandidati))+"','"+unicode(cand2string(okno.barvy))+"','"+unicode(note2string(okno.akronymy))+"','"+unicode(note2string(okno.poznamky))+"','"+unicode(okno.cas.text()[5:])+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        # db.execute("INSERT INTO sudoku_rozreseno VALUES(NULL,'"+unicode(okno.uzivatel)+"','"+unicode(identifikator)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(sudoku2string(okno.reseni))+"','"+unicode(cand2string(okno.kandidati))+"','"+unicode(cand2string(okno.barvy))+"','"+unicode(note2string(okno.akronymy))+"','"+unicode(note2string(okno.poznamky))+"','"+unicode(okno.cas.text()[5:])+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_rozreseno VALUES (NULL,?,?,?,?,?,?,?,?,?,?)",[unicode(okno.uzivatel),unicode(identifikator),unicode(sudoku2string(okno.zadani)),unicode(sudoku2string(okno.reseni)),unicode(cand2string(okno.kandidati)),unicode(cand2string(okno.barvy)),unicode(note2string(okno.akronymy)),unicode(note2string(okno.poznamky)),unicode(okno.cas.text()[5:]),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.ukecanejBanner.setText("Sudoku uloženo.")
@@ -548,8 +558,10 @@ class UserSelectDialog(QtGui.QDialog):
             if len(uzivatel) == 0:
                 QtGui.QMessageBox.critical(None,"Chyba","Zadejte uživatelské jméno.")
                 return False
-            db.execute("INSERT INTO uzivatele VALUES ('"+unicode(uzivatel)+"')")
-            db.execute("INSERT INTO settings VALUES ('"+unicode(uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
+            # db.execute("INSERT INTO uzivatele VALUES ('"+unicode(uzivatel)+"')")
+            db.execute("INSERT INTO uzivatele VALUES (?)",[unicode(uzivatel)])
+            # db.execute("INSERT INTO settings VALUES ('"+unicode(uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
+            db.execute("INSERT INTO settings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[unicode(uzivatel),'#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0',unicode(QtGui.QStyleFactory.keys()[0])])
 
         elif self.rb2.isChecked():
             uzivatel = self.combobox.currentText()
@@ -644,12 +656,13 @@ class UserSelectDialog2(QtGui.QDialog):
             if len(uzivatel) == 0:
                 QtGui.QMessageBox.critical(None,"Chyba","Zadejte uživatelské jméno.")
                 return False
-            db.execute("INSERT INTO uzivatele VALUES ('"+unicode(okno.uzivatel)+"')")
-            db.execute("INSERT INTO settings VALUES ('"+unicode(okno.uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
+            # db.execute("INSERT INTO uzivatele VALUES ('"+unicode(okno.uzivatel)+"')")
+            db.execute("INSERT INTO uzivatele VALUES (?)",[unicode(uzivatel)])
+            # db.execute("INSERT INTO settings VALUES ('"+unicode(okno.uzivatel)+"','#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0','"+unicode(QtGui.QStyleFactory.keys()[0])+"')")
+            db.execute("INSERT INTO settings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[unicode(uzivatel),'#8888ff','#88ff88','#ff8888','#ffff88','#ff88ff','#88ffff','#880088','#888800','#008888','#ffbbbb','#0000ff','#888888','Arial','1','0',unicode(QtGui.QStyleFactory.keys()[0])])
         elif self.rb2.isChecked():
             okno.uzivatel = self.combobox.currentText()
         okno.mainMenu4.setTitle("&Uživatel: "+okno.uzivatel)
-
         db.commit()
         okno.fetchSettings()
         self.close()
@@ -1276,7 +1289,8 @@ class ColorSettingsDialog(QtGui.QDialog):
         except AttributeError:
             pass
 
-        db.execute("UPDATE settings SET barva1='"+unicode(self.tempColors[0])+"',barva2='"+unicode(self.tempColors[1])+"',barva3='"+unicode(self.tempColors[2])+"',barva4='"+unicode(self.tempColors[3])+"',barva5='"+unicode(self.tempColors[4])+"',barva6='"+unicode(self.tempColors[5])+"',barva7='"+unicode(self.tempColors[6])+"',barva8='"+unicode(self.tempColors[7])+"',barva9='"+unicode(self.tempColors[8])+"',kurzor='"+unicode(self.tempCursor)+"',doplneno='"+unicode(self.tempDoplneno)+"',souradnice='"+unicode(self.tempSouradniceColor)+"',font='"+unicode(self.font)+"',cbsouradnice='"+unicode(int(self.tempSouradnice))+"',cbkandidati='"+unicode(int(self.tempAutoColor))+"',styl='"+unicode(self.styl)+"' WHERE uzivatel='"+unicode(okno.uzivatel)+"'")
+        # db.execute("UPDATE settings SET barva1='"+unicode(self.tempColors[0])+"',barva2='"+unicode(self.tempColors[1])+"',barva3='"+unicode(self.tempColors[2])+"',barva4='"+unicode(self.tempColors[3])+"',barva5='"+unicode(self.tempColors[4])+"',barva6='"+unicode(self.tempColors[5])+"',barva7='"+unicode(self.tempColors[6])+"',barva8='"+unicode(self.tempColors[7])+"',barva9='"+unicode(self.tempColors[8])+"',kurzor='"+unicode(self.tempCursor)+"',doplneno='"+unicode(self.tempDoplneno)+"',souradnice='"+unicode(self.tempSouradniceColor)+"',font='"+unicode(self.font)+"',cbsouradnice='"+unicode(int(self.tempSouradnice))+"',cbkandidati='"+unicode(int(self.tempAutoColor))+"',styl='"+unicode(self.styl)+"' WHERE uzivatel='"+unicode(okno.uzivatel)+"'")
+        db.execute("UPDATE settings SET barva1=?, barva2=?, barva3=?, barva4=?, barva5=?, barva6=?, barva7=?, barva8=?, barva9=?, kurzor=?, doplneno=?, souradnice=?, font=?, cbsouradnice=?, cbkandidati=?, styl=? WHERE uzivatel=?", [unicode(self.tempColors[0]),unicode(self.tempColors[1]),unicode(self.tempColors[2]),unicode(self.tempColors[3]),unicode(self.tempColors[4]),unicode(self.tempColors[5]),unicode(self.tempColors[6]),unicode(self.tempColors[7]),unicode(self.tempColors[8]),unicode(self.tempCursor),unicode(self.tempDoplneno),unicode(self.tempSouradniceColor),unicode(self.font),unicode(int(self.tempSouradnice)),unicode(int(self.tempAutoColor)),unicode(self.styl),unicode(okno.uzivatel)])
         db.commit()
 
         okno.barvyBarev = deepcopy(self.tempColors)
@@ -1544,7 +1558,8 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zadani = generator.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (lehké)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        #db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_tréninkové"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("reseni")
@@ -1553,7 +1568,8 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zadani = generator.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (střední)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        #db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_tréninkové"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("reseni")
@@ -1562,7 +1578,8 @@ class GeneratorDialog(QtGui.QDialog):
         okno.zadani = generator.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (těžké)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        #db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_tréninkové"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("reseni")
@@ -1575,7 +1592,8 @@ class GeneratorDialog(QtGui.QDialog):
             okno.zadani = generator.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
             okno.zadaniBackup = deepcopy(okno.zadani)
             okno.puvod = "gen. (vlastní)"
-            db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_tréninkové")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_tréninkové"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
             db.commit()
             self.close()
             okno.zobrazElementy("reseni")
@@ -1648,7 +1666,8 @@ class GeneratorDialog2(QtGui.QDialog):
         okno.zadani = generator.generate(limit=40,bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (lehké)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_soutěžní"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
@@ -1658,7 +1677,8 @@ class GeneratorDialog2(QtGui.QDialog):
         okno.zadani = generator.generate(bf=False)
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (střední)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_soutěžní"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
@@ -1667,7 +1687,8 @@ class GeneratorDialog2(QtGui.QDialog):
         okno.zadani = generator.generate()
         okno.zadaniBackup = deepcopy(okno.zadani)
         okno.puvod = "gen. (těžké)"
-        db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+        db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_soutěžní"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
         db.commit()
         self.close()
         okno.zobrazElementy("na_cas")
@@ -1680,7 +1701,8 @@ class GeneratorDialog2(QtGui.QDialog):
             okno.zadani = generator.generate(singlesol=dialog.singlesol,limit=dialog.limit,bf=dialog.bf)
             okno.zadaniBackup = deepcopy(okno.zadani)
             okno.puvod = "gen. (vlastní)"
-            db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            # db.execute("INSERT INTO sudoku_zadani VALUES(NULL,'"+unicode("_soutěžní")+"','"+unicode(okno.uzivatel)+"','"+unicode(okno.puvod)+"','"+unicode(sudoku2string(okno.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+            db.execute("INSERT INTO sudoku_zadani VALUES (NULL,?,?,?,?,?)", [unicode("_soutěžní"),unicode(okno.uzivatel),unicode(okno.puvod),unicode(sudoku2string(okno.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
             db.commit()
             self.close()
             okno.zobrazElementy("na_cas")
@@ -2323,7 +2345,8 @@ class SuSol(QtGui.QMainWindow):
         if self.rezim in ("na_cas") and solver2.sudokuVyreseno(self.doplneno):
             if len(solver2.solvePC(self.doplneno)[0]) == 1:
                 self.startstop()
-                db.execute("INSERT INTO sudoku_soutez VALUES(NULL,'"+unicode(self.cas.text()[5:])+"','"+unicode(self.uzivatel)+"','"+unicode(self.puvod)[7:-1]+"','"+unicode(sudoku2string(self.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+                # db.execute("INSERT INTO sudoku_soutez VALUES(NULL,'"+unicode(self.cas.text()[5:])+"','"+unicode(self.uzivatel)+"','"+unicode(self.puvod)[7:-1]+"','"+unicode(sudoku2string(self.zadani))+"','"+unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))+"')")
+                db.execute("INSERT INTO sudoku_soutez VALUES (NULL,?,?,?,?,?)",[unicode(self.cas.text()[5:]),unicode(self.uzivatel),unicode(self.puvod)[7:-1],unicode(sudoku2string(self.zadani)),unicode(strftime("%Y-%m-%d %H:%M:%S", localtime()))])
                 db.commit()
                 QtGui.QMessageBox.information(None,"Info","Sudoku úspěšně vyřešeno! Stisknutím OK se vrátíte na úvodní obrazovku.")
                 okno.zobrazElementy("welcome_screen")
@@ -4006,12 +4029,14 @@ class SuSol(QtGui.QMainWindow):
         dialog.exec_()
 
     def fetchSettings(self):
-        self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall()[0][0]
+        # self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall()[0][0]
+        self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel=?",unicode(self.uzivatel)).fetchall()[0][0]
         db.commit()
         app.setStyle(QtGui.QStyleFactory.create(self.styl))
 
         #############CONFIG#######################################################
-        fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall())
+        # fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall())
+        fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel=?",unicode(self.uzivatel)).fetchall())
         self.barvyBarev = [fetch[1],fetch[2],fetch[3],fetch[4],fetch[5],fetch[6],fetch[7],fetch[8],fetch[9]]
         self.barvaKurzoru = fetch[10]
         self.barvaKandidatu = "#000000"
@@ -4409,7 +4434,8 @@ class SuSol(QtGui.QMainWindow):
         self.update()
 
     def mojeSudokuClick(self):
-        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        # seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",unicode(okno.uzivatel)))
         if len(seznam_z_db) == 0:
             QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
             return False

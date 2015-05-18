@@ -122,7 +122,7 @@ class VysledkyDialog(QtGui.QDialog):
         except AttributeError:
             aktivniID = 1
         # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id="+str(aktivniID)))[0])
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id=?",str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_soutez WHERE id=?",[str(aktivniID)]))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -233,7 +233,7 @@ class LoadFromDBDialog(QtGui.QDialog):
         except AttributeError:
             aktivniID = 1
         # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id="+str(aktivniID)))[0])
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id=?",str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_zadani WHERE id=?",[str(aktivniID)]))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -335,17 +335,17 @@ class LoadFromDBDialog2(QtGui.QDialog):
             aktivniID = 1
 
         # load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0]
-        load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0]
+        load = wideDB2list(db.execute("SELECT zadani,doplneno,kandidati,barvy,akronymy,poznamky,cas FROM sudoku_rozreseno WHERE id=?",[str(aktivniID)]))[0]
 
-        okno.zadani = string2sudoku(load[0])
-        okno.reseni = string2sudoku(load[1])
-        okno.kandidati = string2cand(load[2])
-        okno.barvy = string2cand(load[3])
-        okno.akronymy = string2note(load[4])
-        okno.poznamky = string2note(load[5])
+        okno.zadani = deepcopy(string2sudoku(load[0]))
+        okno.reseni = deepcopy(string2sudoku(load[1]))
+        okno.kandidati = deepcopy(string2cand(load[2]))
+        okno.barvy = deepcopy(string2cand(load[3]))
+        okno.akronymy = deepcopy(string2note(load[4]))
+        okno.poznamky = deepcopy(string2note(load[5]))
         okno.time = string2time(load[6])
         okno.zadaniBackup = deepcopy(okno.zadani)
-        okno.zobrazElementy("reseni")
+        okno.zobrazElementy("reseni",noreset=True)
         okno.update()
 
     def rejectDialog(self):
@@ -360,9 +360,9 @@ class LoadFromDBDialog2(QtGui.QDialog):
             aktivniID = 1
 
         # sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
-        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0])
+        sudoku_z_db = string2sudoku(DB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",[str(aktivniID)]))[0])
         # reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(aktivniID)))[0])
-        reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",str(aktivniID)))[0])
+        reseni_z_db = string2sudoku(DB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",[str(aktivniID)]))[0])
 
         for i in range(0,9,1):
             self.aktivniSudoku[i] = deepcopy(sudoku_z_db[i])
@@ -374,16 +374,16 @@ class LoadFromDBDialog2(QtGui.QDialog):
         super(LoadFromDBDialog2,self).__init__()
 
         # seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
-        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",unicode(okno.uzivatel)))
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",[unicode(okno.uzivatel)]))
         db.commit()
 
         pole = []
 
         for i in range(0,len(seznam_z_db),1):
             # zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
-            zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",str(seznam_z_db[i][0])))[0][0]
+            zadani = wideDB2list(db.execute("SELECT zadani FROM sudoku_rozreseno WHERE id=?",[str(seznam_z_db[i][0])]))[0][0]
             # reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id="+str(seznam_z_db[i][0])))[0][0]
-            reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",str(seznam_z_db[i][0])))[0][0]
+            reseni = wideDB2list(db.execute("SELECT doplneno FROM sudoku_rozreseno WHERE id=?",[str(seznam_z_db[i][0])]))[0][0]
             db.commit()
             pole.append([])
 
@@ -4030,13 +4030,13 @@ class SuSol(QtGui.QMainWindow):
 
     def fetchSettings(self):
         # self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall()[0][0]
-        self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel=?",unicode(self.uzivatel)).fetchall()[0][0]
+        self.styl = db.execute("SELECT styl FROM settings WHERE uzivatel=?",[unicode(self.uzivatel)]).fetchall()[0][0]
         db.commit()
         app.setStyle(QtGui.QStyleFactory.create(self.styl))
 
         #############CONFIG#######################################################
         # fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel='"+unicode(self.uzivatel)+"'").fetchall())
-        fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel=?",unicode(self.uzivatel)).fetchall())
+        fetch = realWideDB2list(db.execute("SELECT * FROM settings WHERE uzivatel=?",[unicode(self.uzivatel)]).fetchall())
         self.barvyBarev = [fetch[1],fetch[2],fetch[3],fetch[4],fetch[5],fetch[6],fetch[7],fetch[8],fetch[9]]
         self.barvaKurzoru = fetch[10]
         self.barvaKandidatu = "#000000"
@@ -4361,9 +4361,10 @@ class SuSol(QtGui.QMainWindow):
         self.welcomeButton3.show()
         self.welcomeButton4.show()
 
-    def zobrazElementy(self,theme):
+    def zobrazElementy(self,theme,noreset=False):
         self.hideAll()
-        self.reset()
+        if not noreset:
+            self.reset()
         self.rezim = theme
 
         if self.rezim == "welcome_screen":
@@ -4435,7 +4436,7 @@ class SuSol(QtGui.QMainWindow):
 
     def mojeSudokuClick(self):
         # seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel='"+unicode(okno.uzivatel)+"'"))
-        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",unicode(okno.uzivatel)))
+        seznam_z_db = wideDB2list(db.execute("SELECT id,datum,uzivatel,identifikator FROM sudoku_rozreseno WHERE uzivatel=?",[unicode(okno.uzivatel)]))
         if len(seznam_z_db) == 0:
             QtGui.QMessageBox.information(None,"Info","V databázi se žádné sudoku nenachází.")
             return False
